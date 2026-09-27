@@ -1,6 +1,7 @@
 /* =========================================================
    Luniva — auth.js
-   Sign up, log in, log out and the onboarding flow.
+   Account screens: sign up, log in, log out, onboarding and
+   Settings (profile, preferences, export and delete data).
    Requires storage.js and app.js.
 
    Demo note: this is a single-user, browser-only prototype.
@@ -403,9 +404,190 @@ function initOnboardingPage() {
 }
 
 /* ---------------------------------------------------------
+   SETTINGS
+   --------------------------------------------------------- */
+
+/** Save a partial settings object merged over the current settings. */
+function saveSettings(partial) {
+  const merged = Object.assign({}, getSettings(), partial);
+  saveData(STORAGE_KEYS.settings, merged);
+  return merged;
+}
+
+function fillSettingsForms() {
+  const user = getUser() || {};
+  const settings = getSettings();
+
+  document.getElementById("profile-name").value = user.name || "";
+  document.getElementById("profile-email").value = user.email || "";
+  document.getElementById("profile-height").value = typeof user.heightCm === "number" ? user.heightCm : "";
+
+  document.getElementById("settings-cycle-length").value = settings.cycleLength;
+  document.getElementById("settings-period-length").value = settings.periodLength;
+  const padInput = document.getElementById("settings-pad-" + settings.padReminderDays);
+  if (padInput) padInput.checked = true;
+
+  // Explain which numbers the predictions use right now.
+  const cycle = getAverageCycleLength();
+  const period = getAveragePeriodLength();
+  const notes = [];
+  if (cycle.fromHistory) notes.push("Predictions use your recorded average cycle (" + roundOne(cycle.value) + " days).");
+  if (period.fromHistory) notes.push("Your recorded average period is " + roundOne(period.value) + " days.");
+  document.getElementById("cycle-settings-note").textContent = notes.length
+    ? notes.join(" ") + " These settings are used until there's enough history."
+    : "Used for predictions until you've logged enough periods.";
+
+  document.getElementById("setting-trackWeight").checked = settings.trackWeight;
+  document.querySelectorAll("[data-tracking-key]").forEach(function (input) {
+    input.checked = settings.tracking[input.getAttribute("data-tracking-key")] !== false;
+  });
+  document.querySelectorAll("[data-notification-key]").forEach(function (input) {
+    input.checked = settings.notifications[input.getAttribute("data-notification-key")] === true;
+  });
+}
+
+function saveProfileForm() {
+  const nameInput = document.getElementById("profile-name");
+  const emailInput = document.getElementById("profile-email");
+  const heightInput = document.getElementById("profile-height");
+  [nameInput, emailInput, heightInput].forEach(clearFieldError);
+
+  const name = nameInput.value.trim();
+  const email = emailInput.value.trim();
+  const heightText = heightInput.value.trim();
+  let firstInvalid = null;
+
+  if (!name) {
+    setFieldError(nameInput, "Please enter your name.");
+    firstInvalid = nameInput;
+  }
+  if (!EMAIL_PATTERN.test(email)) {
+    setFieldError(emailInput, "Please enter a valid email, like name@example.com.");
+    firstInvalid = firstInvalid || emailInput;
+  }
+  let heightCm = null;
+  if (heightText !== "") {
+    heightCm = Number(heightText);
+    if (isNaN(heightCm) || heightCm < 50 || heightCm > 250) {
+      setFieldError(heightInput, "Enter a height between 50 and 250 cm, or leave it empty.");
+      firstInvalid = firstInvalid || heightInput;
+    } else {
+      heightCm = Math.round(heightCm * 10) / 10;
+    }
+  }
+  if (firstInvalid) {
+    firstInvalid.focus();
+    return;
+  }
+
+  updateData(STORAGE_KEYS.user, { name: name, email: email, heightCm: heightCm });
+  renderAppNav();   // the avatar initial and name may have changed
+  showToast("Profile saved.", "success");
+}
+
+function saveCycleForm() {
+  const cycleInput = document.getElementById("settings-cycle-length");
+  const periodInput = document.getElementById("settings-period-length");
+  [cycleInput, periodInput].forEach(clearFieldError);
+
+  const cycleLength = Number(cycleInput.value);
+  const periodLength = Number(periodInput.value);
+  let firstInvalid = null;
+
+  if (!Number.isInteger(cycleLength) || cycleLength < CYCLE_LENGTH_MIN || cycleLength > CYCLE_LENGTH_MAX) {
+    setFieldError(cycleInput, "Enter a whole number between " + CYCLE_LENGTH_MIN + " and " + CYCLE_LENGTH_MAX + ".");
+    firstInvalid = cycleInput;
+  }
+  if (!Number.isInteger(periodLength) || periodLength < PERIOD_LENGTH_MIN || periodLength > PERIOD_LENGTH_MAX) {
+    setFieldError(periodInput, "Enter a whole number between " + PERIOD_LENGTH_MIN + " and " + PERIOD_LENGTH_MAX + ".");
+    firstInvalid = firstInvalid || periodInput;
+  }
+  if (firstInvalid) {
+    firstInvalid.focus();
+    return;
+  }
+
+  const padChoice = document.querySelector('input[name="settings-pad-days"]:checked');
+  saveSettings({
+    cycleLength: cycleLength,
+    periodLength: periodLength,
+    padReminderDays: padChoice ? Number(padChoice.value) : DEFAULT_SETTINGS.padReminderDays
+  });
+  showToast("Cycle settings saved.", "success");
+}
+
+/** Download every luniva_* key as a .json file, built in the browser with a Blob. */
+function exportAllData() {
+  const exportObject = {
+    exportedAt: new Date().toString(),
+    app: "Luniva",
+    data: getAllData()
+  };
+  const blob = new Blob([JSON.stringify(exportObject, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "luniva-data-" + todayString() + ".json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  showToast("Your data file is downloading.", "success");
+}
+
+function initSettingsPage() {
+  fillSettingsForms();
+
+  document.getElementById("profile-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    saveProfileForm();
+  });
+  document.getElementById("cycle-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    saveCycleForm();
+  });
+  clearErrorOnInput([
+    document.getElementById("profile-name"),
+    document.getElementById("profile-email"),
+    document.getElementById("profile-height"),
+    document.getElementById("settings-cycle-length"),
+    document.getElementById("settings-period-length")
+  ]);
+
+  // Toggles save as soon as they change.
+  document.getElementById("setting-trackWeight").addEventListener("change", function (event) {
+    saveSettings({ trackWeight: event.target.checked });
+    showToast(event.target.checked ? "Weight tracking is on." : "Weight tracking is off.", "info");
+  });
+  document.querySelectorAll("[data-tracking-key]").forEach(function (input) {
+    input.addEventListener("change", function () {
+      const tracking = getSettings().tracking;
+      tracking[input.getAttribute("data-tracking-key")] = input.checked;
+      saveSettings({ tracking: tracking });
+      showToast("Tracking preferences saved.", "info");
+    });
+  });
+  document.querySelectorAll("[data-notification-key]").forEach(function (input) {
+    input.addEventListener("change", function () {
+      const notifications = getSettings().notifications;
+      notifications[input.getAttribute("data-notification-key")] = input.checked;
+      saveSettings({ notifications: notifications });
+      showToast("Notification preferences saved.", "info");
+    });
+  });
+
+  document.getElementById("export-data").addEventListener("click", exportAllData);
+  document.getElementById("confirm-delete-data").addEventListener("click", function () {
+    clearAllData();
+    window.location.href = "index.html";
+  });
+}
+
+/* ---------------------------------------------------------
    START-UP: run the code for whichever page is open
    --------------------------------------------------------- */
 
 if (document.getElementById("signup-form")) initSignupPage();
 if (document.getElementById("login-form")) initLoginPage();
 if (document.getElementById("onboarding-form")) initOnboardingPage();
+if (document.getElementById("settings-page") && APP_PAGE_ALLOWED) initSettingsPage();
