@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome back · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to form</a>
+
+  <div class="auth-layout">
+    <!-- Decorative brand panel (desktop) -->
+    <aside class="auth-aside" aria-hidden="true">
+      <div class="aside-moon"></div>
+      <div class="auth-aside-content">
+        <span class="brand-link">
+          <svg class="luniva-mark" width="36" height="36" viewBox="0 0 48 48" focusable="false">
+            <circle cx="24" cy="24" r="22" fill="var(--lv-lavender-100)" stroke="var(--lv-lavender-300)" stroke-width="1.5"/>
+            <path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="var(--lv-rose-500)"/>
+            <circle cx="33" cy="17" r="2" fill="var(--lv-lavender-500)"/>
+          </svg>
+          <span class="brand-name">Luniva</span>
+        </span>
+        <h2>Welcome back. How are you feeling today?</h2>
+        <p class="text-muted-soft">Pick up right where you left off — your records are waiting on this device.</p>
+        <ul>
+          <li><i class="bi bi-moon-stars-fill"></i> See where you are in your cycle</li>
+          <li><i class="bi bi-journal-check"></i> Complete today's check-in</li>
+          <li><i class="bi bi-flower1"></i> Take a moment in the Companion space</li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="auth-main">
+      <header class="auth-topbar">
+        <a class="brand-link" href="index.html" aria-label="Luniva home">
+          <svg class="luniva-mark" width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <circle cx="24" cy="24" r="22" fill="var(--lv-lavender-100)" stroke="var(--lv-lavender-300)" stroke-width="1.5"/>
+            <path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="var(--lv-rose-500)"/>
+            <circle cx="33" cy="17" r="2" fill="var(--lv-lavender-500)"/>
+          </svg>
+          <span class="brand-name">Luniva</span>
+        </a>
+        <a class="btn btn-ghost" href="signup.html">Sign up</a>
+      </header>
+
+      <main id="main" class="auth-card">
+        <h1>Welcome back 🌙</h1>
+        <p class="text-muted-soft mb-4">Log in to continue to your Luniva.</p>
+
+        <div id="login-alert" class="alert-inline mb-3" role="alert"></div>
+
+        <form id="login-form" novalidate>
+          <div class="mb-3">
+            <label class="form-label" for="login-email">Email</label>
+            <input class="form-control" type="email" id="login-email" name="email" autocomplete="email"
+                   inputmode="email" placeholder="name@example.com" aria-describedby="login-email-error" required>
+            <div class="invalid-feedback" id="login-email-error"></div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label" for="login-password">Password</label>
+            <div class="input-with-action">
+              <input class="form-control" type="password" id="login-password" name="password" autocomplete="current-password"
+                     placeholder="Your password" aria-describedby="login-password-error" required>
+              <button class="input-action" type="button" data-toggle-password="login-password" aria-label="Show password" aria-pressed="false">
+                <i class="bi bi-eye" aria-hidden="true"></i>
+              </button>
+              <div class="invalid-feedback" id="login-password-error"></div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <div class="form-check mb-0">
+              <input class="form-check-input" type="checkbox" id="login-remember" checked>
+              <label class="form-check-label" for="login-remember">Remember me</label>
+            </div>
+            <a href="#" id="forgot-password" class="small py-2">Forgot password?</a>
+          </div>
+
+          <button class="btn btn-luniva btn-lg w-100" type="submit">
+            Log in <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </button>
+        </form>
+
+        <div class="divider-text">or</div>
+
+        <button class="btn btn-google w-100" type="button" disabled aria-describedby="google-soon">
+          <i class="bi bi-google" aria-hidden="true"></i> Continue with Google
+          <span class="coming-soon" id="google-soon">Coming soon</span>
+        </button>
+
+        <p class="text-center text-muted-soft mt-4 mb-0">
+          New to Luniva? <a href="signup.html">Create your Luniva</a>
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

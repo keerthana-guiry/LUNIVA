@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Set up your Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="onboarding-shell">
+    <header class="d-flex justify-content-between align-items-center">
+      <span class="brand-link">
+        <svg class="luniva-mark" width="30" height="30" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+          <circle cx="24" cy="24" r="22" fill="var(--lv-lavender-100)" stroke="var(--lv-lavender-300)" stroke-width="1.5"/>
+          <path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="var(--lv-rose-500)"/>
+          <circle cx="33" cy="17" r="2" fill="var(--lv-lavender-500)"/>
+        </svg>
+        <span class="brand-name">Luniva</span>
+      </span>
+      <span class="small text-muted-soft"><i class="bi bi-shield-lock" aria-hidden="true"></i> Saved only on this device</span>
+    </header>
+
+    <main class="onboarding-card" aria-labelledby="step-1-title">
+      <!-- Progress indicator -->
+      <div class="progress-steps" id="onboarding-progress">
+        <div class="progress-meta">
+          <span id="step-label">Step 1 of 4</span>
+          <span id="step-name">Your name</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-label="Onboarding progress"
+             aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <form id="onboarding-form" novalidate>
+        <!-- Step 1: Name -->
+        <section class="onboarding-step is-active" data-step="1" aria-labelledby="step-1-title">
+          <span class="eyebrow">Welcome</span>
+          <h1 id="step-1-title" tabindex="-1">What should we call you?</h1>
+          <p class="step-intro">Luniva will greet you by this name. You can change it any time in Settings.</p>
+          <label class="form-label" for="ob-name">Your name</label>
+          <input class="form-control form-control-lg" type="text" id="ob-name" autocomplete="given-name"
+                 aria-describedby="ob-name-error" required>
+          <div class="invalid-feedback" id="ob-name-error"></div>
+        </section>
+
+        <!-- Step 2: Cycle -->
+        <section class="onboarding-step" data-step="2" aria-labelledby="step-2-title" hidden>
+          <span class="eyebrow">Your cycle</span>
+          <h1 id="step-2-title" tabindex="-1">Tell us about your cycle</h1>
+          <p class="step-intro">Approximate is perfectly fine — Luniva learns from what you log over time.</p>
+
+          <div class="mb-4">
+            <label class="form-label" for="ob-last-start">When did your last period start?</label>
+            <input class="form-control" type="date" id="ob-last-start" aria-describedby="ob-last-start-hint ob-last-start-error" required>
+            <div class="form-text" id="ob-last-start-hint">Today or earlier.</div>
+            <div class="invalid-feedback" id="ob-last-start-error"></div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label" for="ob-cycle-length">Typical cycle length (days)</label>
+              <input class="form-control" type="number" id="ob-cycle-length" min="20" max="45" step="1" inputmode="numeric"
+                     aria-describedby="ob-cycle-length-hint ob-cycle-length-error" required>
+              <div class="form-text" id="ob-cycle-length-hint">Usually 20–45 days. Not sure? Keep 28.</div>
+              <div class="invalid-feedback" id="ob-cycle-length-error"></div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="ob-period-length">Typical period duration (days)</label>
+              <input class="form-control" type="number" id="ob-period-length" min="2" max="10" step="1" inputmode="numeric"
+                     aria-describedby="ob-period-length-hint ob-period-length-error" required>
+              <div class="form-text" id="ob-period-length-hint">Usually 2–10 days. Not sure? Keep 5.</div>
+              <div class="invalid-feedback" id="ob-period-length-error"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 3: Tracking choices -->
+        <section class="onboarding-step" data-step="3" aria-labelledby="step-3-title" hidden>
+          <span class="eyebrow">Tracking</span>
+          <h1 id="step-3-title" tabindex="-1">What would you like to track?</h1>
+          <p class="step-intro">Choose what matters to you. Your daily check-in will only show these.</p>
+
+          <fieldset>
+            <legend class="visually-hidden">Things to track</legend>
+            <div class="chip-group">
+              <div class="chip"><input type="checkbox" id="track-pain" checked><label for="track-pain">🤕 Pain</label></div>
+              <div class="chip"><input type="checkbox" id="track-flow" checked><label for="track-flow">🩸 Blood flow</label></div>
+              <div class="chip"><input type="checkbox" id="track-sleep" checked><label for="track-sleep">😴 Sleep</label></div>
+              <div class="chip"><input type="checkbox" id="track-mood" checked><label for="track-mood">🙂 Mood</label></div>
+              <div class="chip"><input type="checkbox" id="track-cravings" checked><label for="track-cravings">🍫 Cravings</label></div>
+              <div class="chip"><input type="checkbox" id="track-weight"><label for="track-weight">⚖️ Weight</label></div>
+              <div class="chip"><input type="checkbox" id="track-symptoms" checked><label for="track-symptoms">📝 Symptoms</label></div>
+            </div>
+          </fieldset>
+          <p class="form-text mt-3 mb-0">Weight is off by default. If you turn it on, it's shown neutrally — no goals, no judgement.</p>
+        </section>
+
+        <!-- Step 4: Reminders -->
+        <section class="onboarding-step" data-step="4" aria-labelledby="step-4-title" hidden>
+          <span class="eyebrow">Reminders</span>
+          <h1 id="step-4-title" tabindex="-1">Choose your reminders</h1>
+          <p class="step-intro">Reminders appear inside Luniva when you open it. You can change these later.</p>
+
+          <div class="toggle-list">
+            <div class="toggle-row">
+              <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🔔</span>
+              <div class="toggle-text">
+                <label for="remind-period">Period reminder</label>
+                <small>When your next period may be close</small>
+              </div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-period" checked></div>
+            </div>
+
+            <div>
+              <div class="toggle-row">
+                <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">👜</span>
+                <div class="toggle-text">
+                  <label for="remind-pad">Pad reminder</label>
+                  <small>A nudge to carry a pad</small>
+                </div>
+                <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-pad" checked></div>
+              </div>
+              <fieldset class="toggle-extra mt-2">
+                <legend class="small text-muted-soft mb-2" style="font-size:.85rem">Remind me this many days before:</legend>
+                <div class="segmented">
+                  <input type="radio" name="pad-days" id="pad-days-1" value="1"><label for="pad-days-1">1 day</label>
+                  <input type="radio" name="pad-days" id="pad-days-2" value="2" checked><label for="pad-days-2">2 days</label>
+                  <input type="radio" name="pad-days" id="pad-days-3" value="3"><label for="pad-days-3">3 days</label>
+                </div>
+              </fieldset>
+            </div>
+
+            <div class="toggle-row">
+              <span class="icon-bubble icon-bubble-cream" aria-hidden="true">📝</span>
+              <div class="toggle-text">
+                <label for="remind-checkin">Daily check-in</label>
+                <small>A gentle prompt to log your day</small>
+              </div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-checkin" checked></div>
+            </div>
+
+            <div class="toggle-row">
+              <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">😴</span>
+              <div class="toggle-text">
+                <label for="remind-sleep">Sleep reminder</label>
+                <small>A soft reminder to wind down</small>
+              </div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-sleep"></div>
+            </div>
+
+            <div class="toggle-row">
+              <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🌷</span>
+              <div class="toggle-text">
+                <label for="remind-motivation">Motivation</label>
+                <small>A kind word now and then</small>
+              </div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-motivation" checked></div>
+            </div>
+
+            <div class="toggle-row">
+              <span class="icon-bubble icon-bubble-cream" aria-hidden="true">🌙</span>
+              <div class="toggle-text">
+                <label for="remind-companion">Distraction / Companion</label>
+                <small>Jokes, questions and tiny challenges</small>
+              </div>
+              <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="remind-companion" checked></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Finish screen -->
+        <section class="onboarding-step finish-screen" data-step="5" aria-labelledby="step-5-title" hidden>
+          <svg class="finish-moon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <circle cx="24" cy="24" r="22" fill="var(--lv-lavender-100)" stroke="var(--lv-lavender-300)" stroke-width="1"/>
+            <path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="var(--lv-rose-500)"/>
+            <circle cx="33" cy="17" r="2" fill="var(--lv-lavender-500)"/>
+          </svg>
+          <h1 id="step-5-title" tabindex="-1">Welcome to Luniva 🌙</h1>
+          <p class="text-muted-soft">You're all set, <span id="finish-name"></span>. Here's where you are right now:</p>
+
+          <div class="finish-summary">
+            <div><strong id="finish-cycle-day">—</strong><span>Cycle day</span></div>
+            <div><strong id="finish-cycle-length">—</strong><span>Cycle length (days)</span></div>
+            <div><strong id="finish-next">—</strong><span>Next period (predicted)</span></div>
+          </div>
+          <p class="small text-muted-soft" id="finish-note"></p>
+
+          <a class="btn btn-luniva btn-lg mt-2" href="dashboard.html">
+            Go to my dashboard <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </a>
+        </section>
+
+        <!-- Back / Next -->
+        <div class="onboarding-actions" id="onboarding-actions">
+          <button class="btn btn-outline-luniva" type="button" id="onboarding-back" hidden>
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+          </button>
+          <button class="btn btn-luniva ms-auto" type="submit" id="onboarding-next">
+            Next <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <p class="text-center small text-muted-soft mt-4 mb-0 px-2">
+      Luniva helps you record and understand your personal patterns. It does not provide medical diagnosis or replace professional medical advice.
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>
