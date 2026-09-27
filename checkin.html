@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Check-in · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app-nav"></div>
+
+  <main id="main" class="app-main">
+    <div class="app-container checkin-container" id="checkin-page">
+      <header class="page-header">
+        <h1>Daily Check-in</h1>
+        <p>A minute for yourself. Log only what feels useful today.</p>
+      </header>
+
+      <form id="checkin-form" novalidate>
+        <!-- Date -->
+        <section class="lv-card checkin-date-card" aria-labelledby="date-title">
+          <div class="flex-grow-1">
+            <h2 id="date-title" class="card-title-sm mb-1"><label for="checkin-date">Which day?</label></h2>
+            <p class="small text-muted-soft mb-0" id="checkin-mode">New check-in</p>
+          </div>
+          <div class="checkin-date-input">
+            <input class="form-control" type="date" id="checkin-date" aria-describedby="checkin-date-error" required>
+            <div class="invalid-feedback" id="checkin-date-error"></div>
+          </div>
+        </section>
+
+        <p class="small text-muted-soft mt-3 mb-0" id="hidden-sections-note" hidden>
+          <i class="bi bi-eye-slash" aria-hidden="true"></i>
+          Some categories are turned off. You can choose what to track in <a href="settings.html">Settings</a>.
+        </p>
+
+        <!-- Mood -->
+        <section class="lv-card checkin-section" id="section-mood" data-tracking="mood" aria-labelledby="mood-title">
+          <h2 id="mood-title" class="checkin-title"><span aria-hidden="true">🙂</span> Mood</h2>
+          <div class="chip-group" role="group" aria-labelledby="mood-title" data-single="mood"></div>
+        </section>
+
+        <!-- Energy -->
+        <section class="lv-card checkin-section" id="section-energy" aria-labelledby="energy-title">
+          <h2 id="energy-title" class="checkin-title"><span aria-hidden="true">⚡</span> Energy</h2>
+          <div class="chip-group" role="group" aria-labelledby="energy-title" data-single="energy"></div>
+        </section>
+
+        <!-- Pain -->
+        <section class="lv-card checkin-section" id="section-pain" data-tracking="pain" aria-labelledby="pain-title">
+          <h2 id="pain-title" class="checkin-title"><span aria-hidden="true">🤕</span> Pain</h2>
+          <div class="pain-slider-wrap">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <label class="form-label mb-0" for="pain-level">Pain Level: <span id="pain-value">0</span>/10</label>
+              <button type="button" class="btn btn-ghost btn-sm" id="pain-clear" hidden>Clear</button>
+            </div>
+            <input type="range" class="form-range pain-range" id="pain-level" min="0" max="10" step="1" value="0"
+                   aria-describedby="pain-scale pain-state">
+            <div class="pain-scale" id="pain-scale">
+              <span>0 — No pain</span><span>10 — Severe</span>
+            </div>
+            <p class="small text-muted-soft mb-0" id="pain-state">Not recorded yet — move the slider to log pain.</p>
+          </div>
+
+          <fieldset class="mt-3">
+            <legend class="form-label">Where do you feel it?</legend>
+            <div class="chip-group" data-multi="painLocations"></div>
+          </fieldset>
+        </section>
+
+        <!-- Symptoms -->
+        <section class="lv-card checkin-section" id="section-symptoms" data-tracking="symptoms" aria-labelledby="symptoms-title">
+          <h2 id="symptoms-title" class="checkin-title"><span aria-hidden="true">📝</span> Symptoms</h2>
+          <fieldset>
+            <legend class="visually-hidden">Symptoms</legend>
+            <div class="chip-group" data-multi="symptoms"></div>
+          </fieldset>
+        </section>
+
+        <!-- Flow -->
+        <section class="lv-card checkin-section" id="section-flow" data-tracking="flow" aria-labelledby="flow-title">
+          <h2 id="flow-title" class="checkin-title"><span aria-hidden="true">🩸</span> Blood Flow</h2>
+          <div class="chip-group" role="group" aria-labelledby="flow-title" data-single="flow"></div>
+          <p class="small text-muted-soft mt-3 mb-0" id="flow-period-hint" hidden>
+            This day isn't marked as a period day. If your period has started, you can log it in the
+            <a href="tracker.html">Period Tracker</a>.
+          </p>
+        </section>
+
+        <!-- Calm note for severe pain / very heavy flow -->
+        <div class="calm-note mt-3" id="care-note" role="status" hidden>
+          <i class="bi bi-heart" aria-hidden="true"></i>
+          <span>If this is unusual or keeps happening, consider talking to a healthcare professional.</span>
+        </div>
+
+        <!-- Sleep -->
+        <section class="lv-card checkin-section" id="section-sleep" data-tracking="sleep" aria-labelledby="sleep-title">
+          <h2 id="sleep-title" class="checkin-title"><span aria-hidden="true">😴</span> Sleep</h2>
+          <div class="row g-3">
+            <div class="col-6">
+              <label class="form-label" for="sleep-bedtime">Bedtime</label>
+              <input class="form-control" type="time" id="sleep-bedtime">
+            </div>
+            <div class="col-6">
+              <label class="form-label" for="sleep-wake">Wake-up time</label>
+              <input class="form-control" type="time" id="sleep-wake">
+            </div>
+          </div>
+          <p class="sleep-total" id="sleep-total" aria-live="polite">Total sleep: —</p>
+          <p class="form-label mb-2" id="sleep-quality-label">Sleep quality</p>
+          <div class="chip-group" role="group" aria-labelledby="sleep-quality-label" data-single="sleepQuality"></div>
+        </section>
+
+        <!-- Cravings -->
+        <section class="lv-card checkin-section" id="section-cravings" data-tracking="cravings" aria-labelledby="cravings-title">
+          <h2 id="cravings-title" class="checkin-title"><span aria-hidden="true">🍫</span> Cravings</h2>
+          <fieldset>
+            <legend class="visually-hidden">Cravings</legend>
+            <div class="chip-group" data-multi="cravings"></div>
+          </fieldset>
+        </section>
+
+        <!-- Body (weight only when enabled) -->
+        <section class="lv-card checkin-section" id="section-body" aria-labelledby="body-title" hidden>
+          <h2 id="body-title" class="checkin-title"><span aria-hidden="true">⚖️</span> Body</h2>
+          <label class="form-label" for="weight-kg">Weight (kg) <span class="text-muted-soft fw-normal">— optional</span></label>
+          <input class="form-control weight-input" type="number" id="weight-kg" min="20" max="300" step="0.1" inputmode="decimal"
+                 aria-describedby="weight-kg-error">
+          <div class="invalid-feedback" id="weight-kg-error"></div>
+        </section>
+
+        <!-- Notes -->
+        <section class="lv-card checkin-section" id="section-notes" aria-labelledby="notes-title">
+          <h2 id="notes-title" class="checkin-title"><span aria-hidden="true">💭</span> Notes</h2>
+          <label class="visually-hidden" for="checkin-notes">How was your day?</label>
+          <textarea class="form-control" id="checkin-notes" rows="4" maxlength="1000" placeholder="How was your day?"></textarea>
+        </section>
+
+        <div class="checkin-save">
+          <button type="submit" class="btn btn-luniva btn-lg w-100">
+            <i class="bi bi-check2-circle" aria-hidden="true"></i> <span id="save-label">Save Today's Check-in</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/checkin.js"></script>
+</body>
+</html>

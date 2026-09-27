@@ -12,32 +12,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 /* ---------------------------------------------------------
-   SHARED FORM HELPERS
+   FORM HELPERS
+   (setFieldError / clearFieldError live in app.js)
    --------------------------------------------------------- */
-
-/** Show an inline error under an input and mark it invalid for screen readers. */
-function setFieldError(input, message) {
-  const feedback = document.getElementById(input.id + "-error");
-  input.classList.add("is-invalid");
-  input.setAttribute("aria-invalid", "true");
-  if (feedback) feedback.textContent = message;
-}
-
-/** Remove an inline error from an input. */
-function clearFieldError(input) {
-  const feedback = document.getElementById(input.id + "-error");
-  input.classList.remove("is-invalid");
-  input.removeAttribute("aria-invalid");
-  if (feedback) feedback.textContent = "";
-}
-
-/** Clear the error as soon as the user starts fixing a field. */
-function clearErrorOnInput(inputs) {
-  inputs.forEach(function (input) {
-    const eventName = input.type === "checkbox" ? "change" : "input";
-    input.addEventListener(eventName, function () { clearFieldError(input); });
-  });
-}
 
 /** Wire every "show password" eye button on the page. */
 function setupPasswordToggles() {
@@ -51,17 +28,6 @@ function setupPasswordToggles() {
       button.querySelector("i").className = isHidden ? "bi bi-eye-slash" : "bi bi-eye";
     });
   });
-}
-
-/** Show a message in a form-level alert box. */
-function showFormAlert(alertElement, html) {
-  alertElement.innerHTML = '<i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>' + html + "</span>";
-  alertElement.classList.add("is-visible");
-}
-
-function hideFormAlert(alertElement) {
-  alertElement.classList.remove("is-visible");
-  alertElement.innerHTML = "";
 }
 
 /* ---------------------------------------------------------

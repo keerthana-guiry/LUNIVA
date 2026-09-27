@@ -7,6 +7,8 @@
      4. Cycle calculations (Section 26B)
      5. Toast messages
      6. Route guard + navigation rendering
+     7. In-app notifications (shared helpers)
+     8. Dashboard page
    Requires storage.js to be loaded first.
    ========================================================= */
 
@@ -148,6 +150,43 @@ function getInitial(name) {
   return trimmed ? trimmed.charAt(0).toUpperCase() : "L";
 }
 
+/* ---------- Inline form errors (used by every form) ---------- */
+
+/** Show an inline error under an input and mark it invalid for screen readers. */
+function setFieldError(input, message) {
+  const feedback = document.getElementById(input.id + "-error");
+  input.classList.add("is-invalid");
+  input.setAttribute("aria-invalid", "true");
+  if (feedback) feedback.textContent = message;
+}
+
+/** Remove an inline error from an input. */
+function clearFieldError(input) {
+  const feedback = document.getElementById(input.id + "-error");
+  input.classList.remove("is-invalid");
+  input.removeAttribute("aria-invalid");
+  if (feedback) feedback.textContent = "";
+}
+
+/** Clear the error as soon as the user starts fixing a field. */
+function clearErrorOnInput(inputs) {
+  inputs.forEach(function (input) {
+    const eventName = input.type === "checkbox" ? "change" : "input";
+    input.addEventListener(eventName, function () { clearFieldError(input); });
+  });
+}
+
+/** Show a message in a form-level alert box. */
+function showFormAlert(alertElement, html) {
+  alertElement.innerHTML = '<i class="bi bi-exclamation-circle" aria-hidden="true"></i><span>' + html + "</span>";
+  alertElement.classList.add("is-visible");
+}
+
+function hideFormAlert(alertElement) {
+  alertElement.classList.remove("is-visible", "alert-inline-info");
+  alertElement.innerHTML = "";
+}
+
 /* ---------------------------------------------------------
    3. SETTINGS, USER, PERIODS AND DAILY LOGS
    --------------------------------------------------------- */
@@ -170,6 +209,97 @@ const PERIOD_LENGTH_MAX = 10;
 
 // A period active longer than this triggers the "Has your period ended?" prompt again.
 const LONG_PERIOD_DAYS = 10;
+
+/*
+ * Choice lists shared by the tracker, check-in, history and insights.
+ * `value` is what gets stored; `label` and `emoji` are what people see.
+ */
+const FLOW_OPTIONS = [
+  { value: "none", label: "None", emoji: "⚪" },
+  { value: "spotting", label: "Spotting", emoji: "🔸" },
+  { value: "light", label: "Light", emoji: "💧" },
+  { value: "medium", label: "Medium", emoji: "🩸" },
+  { value: "heavy", label: "Heavy", emoji: "🩸🩸" },
+  { value: "veryHeavy", label: "Very Heavy", emoji: "🩸🩸🩸" }
+];
+
+const MOOD_OPTIONS = [
+  { value: "happy", label: "Happy", emoji: "😊" },
+  { value: "calm", label: "Calm", emoji: "😌" },
+  { value: "irritated", label: "Irritated", emoji: "😤" },
+  { value: "sad", label: "Sad", emoji: "😢" },
+  { value: "anxious", label: "Anxious", emoji: "😟" },
+  { value: "tired", label: "Tired", emoji: "🥱" }
+];
+
+const ENERGY_OPTIONS = [
+  { value: "low", label: "Low", emoji: "🪫" },
+  { value: "medium", label: "Medium", emoji: "🔋" },
+  { value: "high", label: "High", emoji: "⚡" }
+];
+
+const PAIN_LOCATIONS = [
+  { value: "lowerAbdomen", label: "Lower abdomen" },
+  { value: "back", label: "Back" },
+  { value: "head", label: "Head" },
+  { value: "legs", label: "Legs" },
+  { value: "breasts", label: "Breasts" },
+  { value: "other", label: "Other" }
+];
+
+const SYMPTOM_OPTIONS = [
+  { value: "cramps", label: "Cramps" },
+  { value: "headache", label: "Headache" },
+  { value: "bloating", label: "Bloating" },
+  { value: "acne", label: "Acne" },
+  { value: "nausea", label: "Nausea" },
+  { value: "fatigue", label: "Fatigue" },
+  { value: "breastTenderness", label: "Breast tenderness" },
+  { value: "backPain", label: "Back pain" },
+  { value: "moodChanges", label: "Mood changes" },
+  { value: "other", label: "Other" }
+];
+
+const CRAVING_OPTIONS = [
+  { value: "sweet", label: "Sweet", emoji: "🍬" },
+  { value: "salty", label: "Salty", emoji: "🥨" },
+  { value: "spicy", label: "Spicy", emoji: "🌶️" },
+  { value: "chocolate", label: "Chocolate", emoji: "🍫" },
+  { value: "carbs", label: "Carbs", emoji: "🍞" },
+  { value: "other", label: "Other", emoji: "🍽️" },
+  { value: "none", label: "None", emoji: "🚫" }
+];
+
+const SLEEP_QUALITY_OPTIONS = [
+  { value: "poor", label: "Poor", emoji: "😣" },
+  { value: "fair", label: "Fair", emoji: "😐" },
+  { value: "good", label: "Good", emoji: "🙂" },
+  { value: "great", label: "Great", emoji: "😴" }
+];
+
+/** Find an option object by its stored value, e.g. findOption(FLOW_OPTIONS, "light"). */
+function findOption(options, value) {
+  for (let i = 0; i < options.length; i++) {
+    if (options[i].value === value) return options[i];
+  }
+  return null;
+}
+
+/** Stored value → "emoji Label" text, or "" when nothing matches. */
+function optionText(options, value) {
+  const option = findOption(options, value);
+  if (!option) return "";
+  return option.emoji ? option.emoji + " " + option.label : option.label;
+}
+
+/** Hours as a friendly string: 7.5 → "7 h 30 min". */
+function formatHours(hours) {
+  if (typeof hours !== "number" || isNaN(hours)) return "—";
+  const totalMinutes = Math.round(hours * 60);
+  const wholeHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return minutes ? wholeHours + " h " + minutes + " min" : wholeHours + " h";
+}
 
 function getUser() {
   return getData(STORAGE_KEYS.user);
@@ -362,7 +492,8 @@ function getAverageSleep() {
   const values = Object.keys(logs)
     .map(function (date) { return logs[date].sleep && logs[date].sleep.hours; })
     .filter(function (hours) { return typeof hours === "number" && !isNaN(hours) && hours > 0; });
-  return values.length ? roundOne(average(values)) : null;
+  // Two decimals so formatHours() shows exact minutes (7.75 → "7 h 45 min").
+  return values.length ? Math.round(average(values) * 100) / 100 : null;
 }
 
 /* ---------------------------------------------------------
@@ -439,11 +570,12 @@ function guardAppPage() {
   return true;
 }
 
-/** Number of unread in-app notifications (for the bell badge). */
+/** Number of unread notifications that are already due (for the bell badge). */
 function getUnreadCount() {
-  const notifications = getData(STORAGE_KEYS.notifications);
-  if (!Array.isArray(notifications)) return 0;
-  return notifications.filter(function (item) { return item && !item.read; }).length;
+  const today = todayString();
+  return getNotifications().filter(function (item) {
+    return !item.read && item.date <= today;
+  }).length;
 }
 
 // Desktop sidebar links (Section 25).
@@ -565,6 +697,175 @@ function renderAppFooter() {
 }
 
 /* ---------------------------------------------------------
+   7. IN-APP NOTIFICATIONS (shared helpers)
+   notifications.js builds the notification centre; these helpers
+   let any page add a notification (e.g. the tracker's "I'm not sure").
+   --------------------------------------------------------- */
+
+/** All notifications (valid entries only). */
+function getNotifications() {
+  const notifications = getData(STORAGE_KEYS.notifications);
+  if (!Array.isArray(notifications)) return [];
+  return notifications.filter(function (item) {
+    return item && typeof item.type === "string" && isValidDateString(item.date);
+  });
+}
+
+/**
+ * Add a notification of `type` for `dateString`.
+ * At most one notification per type per day: returns false if one exists.
+ */
+function addNotification(type, message, dateString) {
+  const notifications = getNotifications();
+  const exists = notifications.some(function (item) {
+    return item.type === type && item.date === dateString;
+  });
+  if (exists) return false;
+  notifications.push({ id: generateId(), type: type, message: message, date: dateString, read: false });
+  saveData(STORAGE_KEYS.notifications, notifications);
+  return true;
+}
+
+/* ---------------------------------------------------------
+   8. DASHBOARD PAGE
+   Every number here comes from the calculation functions above.
+   --------------------------------------------------------- */
+
+// Short replies to the dashboard's "How are you feeling today?" buttons.
+const FEELING_REPLIES = {
+  great: { text: "That's lovely to hear! Want to note what made today good?", link: "checkin.html", cta: "Complete Check-in" },
+  good: { text: "Glad you're doing well. A quick check-in keeps your patterns accurate.", link: "checkin.html", cta: "Complete Check-in" },
+  okay: { text: "Okay is okay. Be gentle with yourself today.", link: "checkin.html", cta: "Complete Check-in" },
+  low: { text: "Sorry today feels low. A little comfort might help.", link: "companion.html", cta: "Open Luniva Companion 🌙" },
+  difficult: { text: "That sounds hard. You don't have to go through it alone — take a moment for you.", link: "companion.html", cta: "Open Luniva Companion 🌙" }
+};
+
+/** Set the circular cycle progress ring (0–1). */
+function setCycleRing(fraction) {
+  const ring = document.getElementById("cycle-ring-progress");
+  if (!ring) return;
+  const radius = Number(ring.getAttribute("r"));
+  const circumference = 2 * Math.PI * radius;
+  const clamped = Math.max(0, Math.min(1, fraction));
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+  // Wait a frame so the CSS transition animates from empty to full.
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      ring.style.strokeDashoffset = circumference * (1 - clamped);
+    });
+  });
+}
+
+/** Fill one quick-stat card. `value` null → friendly empty state. */
+function renderStat(id, value, unit, note) {
+  const card = document.getElementById(id);
+  if (!card) return;
+  const valueElement = card.querySelector(".stat-value");
+  const noteElement = card.querySelector(".stat-note");
+  if (value === null) {
+    valueElement.innerHTML = '<span class="stat-empty">—</span>';
+    noteElement.textContent = "Log a few days to see your patterns here 🌙";
+  } else {
+    valueElement.innerHTML = escapeHtml(value) + (unit ? ' <span class="stat-unit">' + escapeHtml(unit) + "</span>" : "");
+    noteElement.textContent = note || "";
+  }
+}
+
+function initDashboardPage() {
+  const user = getUser() || {};
+  const settings = getSettings();
+  const today = todayString();
+
+  document.getElementById("greeting").textContent = getGreeting() + ", " + (user.name || "friend") + " 🌷";
+  document.getElementById("today-date").textContent = formatDisplayDate(today, { withWeekday: true });
+
+  // ---- Cycle card ----
+  const cycleDay = getCycleDay();
+  const active = getActivePeriod();
+  const averageCycle = getAverageCycleLength();
+  const cycleMain = document.getElementById("cycle-main");
+  const cycleStatus = document.getElementById("cycle-status");
+  const cycleDetail = document.getElementById("cycle-detail");
+
+  if (cycleDay === null) {
+    cycleMain.innerHTML = '<span class="cycle-day-label">Cycle day</span><span class="cycle-day-number">—</span>';
+    cycleStatus.textContent = "No period logged yet";
+    cycleDetail.textContent = "Add your last period start in the Period Tracker to see predictions.";
+    setCycleRing(0);
+  } else {
+    cycleMain.innerHTML =
+      '<span class="cycle-day-label">Cycle day</span><span class="cycle-day-number">' + cycleDay + "</span>";
+    setCycleRing(cycleDay / averageCycle.value);
+
+    const nextStart = getNextPredictedStart();
+    const daysUntil = getDaysUntilNextPeriod();
+
+    if (active) {
+      const periodDay = daysBetween(active.startDate, today) + 1;
+      cycleStatus.textContent = "Period active — Day " + periodDay;
+      cycleDetail.textContent = "Started " + formatDisplayDate(active.startDate, { withWeekday: true }) +
+        ". Tell Luniva when it ends in the Period Tracker.";
+      document.getElementById("cycle-card").classList.add("is-period");
+    } else if (isPeriodLate()) {
+      cycleStatus.textContent = "Your period is later than your usual pattern.";
+      cycleDetail.textContent = "Your usual cycle is about " + pluralize(Math.round(averageCycle.value), "day") +
+        ". If your period has started, you can log it in the Period Tracker.";
+    } else if (daysUntil === 0) {
+      cycleStatus.textContent = "Period expected today";
+      cycleDetail.textContent = "Predicted from your " + (averageCycle.fromHistory ? "recorded cycles." : "cycle settings.");
+    } else {
+      cycleStatus.textContent = "Period expected in " + pluralize(daysUntil, "day");
+      cycleDetail.textContent = "Around " + formatDisplayDate(nextStart, { withWeekday: true }) +
+        " · based on your " + (averageCycle.fromHistory ? "recorded cycles." : "cycle settings.");
+    }
+  }
+
+  // ---- Banners ----
+  if (isActivePeriodLong()) {
+    document.getElementById("long-period-banner").hidden = false;
+    document.getElementById("long-period-days").textContent =
+      pluralize(daysBetween(active.startDate, today) + 1, "day");
+  }
+  if (settings.notifications.pad && isPadReminderDue()) {
+    document.getElementById("pad-banner").hidden = false;
+  }
+
+  // ---- Quick statistics ----
+  const averagePeriod = getAveragePeriodLength();
+  renderStat("stat-cycle", roundOne(averageCycle.value), "days",
+    averageCycle.fromHistory ? "From your recorded cycles" : "From your settings for now");
+  renderStat("stat-period", roundOne(averagePeriod.value), "days",
+    averagePeriod.fromHistory ? "From your ended periods" : "From your settings for now");
+  const averagePain = getAveragePain();
+  renderStat("stat-pain", averagePain, "/ 10", "Across your check-ins");
+  const averageSleep = getAverageSleep();
+  renderStat("stat-sleep", averageSleep === null ? null : formatHours(averageSleep), "", "Per logged night");
+
+  // ---- Today's check-in ----
+  const todayLog = getDailyLog(today);
+  const checkinStatus = document.getElementById("checkin-status");
+  if (todayLog) {
+    checkinStatus.innerHTML = '<i class="bi bi-check-circle-fill" aria-hidden="true"></i> You\'ve checked in today';
+    checkinStatus.hidden = false;
+    document.getElementById("checkin-button").innerHTML = 'Edit Today\'s Check-in <i class="bi bi-arrow-right" aria-hidden="true"></i>';
+  }
+
+  const feelingButtons = document.querySelectorAll("[data-feeling]");
+  const feelingReply = document.getElementById("feeling-reply");
+  feelingButtons.forEach(function (button) {
+    button.addEventListener("click", function () {
+      feelingButtons.forEach(function (other) { other.setAttribute("aria-pressed", String(other === button)); });
+      const reply = FEELING_REPLIES[button.getAttribute("data-feeling")];
+      feelingReply.innerHTML =
+        "<p>" + escapeHtml(reply.text) + "</p>" +
+        '<a class="btn btn-soft btn-sm" href="' + reply.link + '">' + escapeHtml(reply.cta) + "</a>";
+      feelingReply.hidden = false;
+    });
+  });
+}
+
+/* ---------------------------------------------------------
    PAGE START-UP
    Pages with <div id="app-nav"> are "app pages": they are
    guarded and get the shared navigation.
@@ -578,6 +879,7 @@ const APP_PAGE_ALLOWED = IS_APP_PAGE ? guardAppPage() : true;
 if (IS_APP_PAGE && APP_PAGE_ALLOWED) {
   renderAppNav();
   renderAppFooter();
+  if (document.getElementById("dashboard-page")) initDashboardPage();
 }
 
 /**
