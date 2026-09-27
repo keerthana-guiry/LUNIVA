@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Period Tracker · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app-nav"></div>
+
+  <main id="main" class="app-main">
+    <div class="app-container" id="tracker-page">
+      <header class="page-header d-flex flex-column flex-sm-row justify-content-between align-items-sm-end gap-3">
+        <div>
+          <h1>Period Tracker</h1>
+          <p>Log your period, see predictions, and record flow day by day.</p>
+        </div>
+        <button type="button" class="btn btn-luniva" id="log-period-button">
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Log a period
+        </button>
+      </header>
+
+      <div class="row g-3 g-lg-4">
+        <!-- Calendar -->
+        <div class="col-lg-8 order-2 order-lg-1">
+          <section class="lv-card calendar-card" aria-labelledby="calendar-title">
+            <div class="calendar-toolbar">
+              <button type="button" class="icon-button" id="prev-month" aria-label="Previous month">
+                <i class="bi bi-chevron-left" aria-hidden="true"></i>
+              </button>
+              <h2 id="calendar-title" class="calendar-title" aria-live="polite"></h2>
+              <button type="button" class="icon-button" id="next-month" aria-label="Next month">
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+              </button>
+            </div>
+            <div class="text-center mb-2">
+              <button type="button" class="btn btn-ghost btn-sm" id="today-month">Jump to today</button>
+            </div>
+
+            <div class="calendar-grid calendar-weekdays" aria-hidden="true">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div class="calendar-grid" id="calendar-days" role="group" aria-labelledby="calendar-title"></div>
+
+            <ul class="calendar-legend" aria-label="Calendar legend">
+              <li><span class="legend-swatch swatch-period" aria-hidden="true"></span>🩸 Period</li>
+              <li><span class="legend-swatch swatch-predicted" aria-hidden="true"></span>🌙 Predicted</li>
+              <li><span class="legend-swatch swatch-today" aria-hidden="true"></span>⭐ Today</li>
+              <li><span class="legend-flow" aria-hidden="true"><i></i><i></i><i></i></span>Flow logged</li>
+            </ul>
+            <p class="small text-muted-soft text-center mb-0 mt-2">Tap a day to log or edit flow.</p>
+          </section>
+        </div>
+
+        <!-- My period + period-end prompt -->
+        <div class="col-lg-4 order-1 order-lg-2 d-flex flex-column gap-3">
+          <section class="lv-card" aria-labelledby="my-period-title">
+            <h2 id="my-period-title" class="card-title-sm">My Period</h2>
+            <dl class="period-facts">
+              <div><dt>Start date</dt><dd id="my-period-start">—</dd></div>
+              <div><dt>Status</dt><dd id="my-period-status">—</dd></div>
+              <div><dt>Next predicted start</dt><dd id="my-period-next">—</dd></div>
+            </dl>
+            <p class="late-note" id="late-note" hidden>Your period is later than your usual pattern.</p>
+          </section>
+
+          <section class="lv-card period-end-card" id="period-end" aria-labelledby="period-end-title" hidden>
+            <h2 id="period-end-title" class="card-title-sm">Has your period ended?</h2>
+            <p class="text-muted-soft small mb-3" id="period-end-intro"></p>
+            <p class="calm-note mb-3" id="long-period-note" hidden>
+              <i class="bi bi-info-circle" aria-hidden="true"></i>
+              <span>Your period has been marked active for more than 10 days. Luniva won't close it on its own — please let us know if it has ended.</span>
+            </p>
+
+            <div class="choice-list" role="group" aria-labelledby="period-end-title">
+              <button type="button" class="choice-button" data-end-choice="today"><span aria-hidden="true">✅</span> Yes, it ended today</button>
+              <button type="button" class="choice-button" data-end-choice="earlier" aria-expanded="false" aria-controls="end-earlier-form"><span aria-hidden="true">📅</span> It ended earlier</button>
+              <form class="end-earlier-form" id="end-earlier-form" novalidate hidden>
+                <label class="form-label" for="end-earlier-date">When did it end?</label>
+                <input class="form-control" type="date" id="end-earlier-date" aria-describedby="end-earlier-date-error" required>
+                <div class="invalid-feedback" id="end-earlier-date-error"></div>
+                <div class="d-flex gap-2 mt-2">
+                  <button type="submit" class="btn btn-luniva flex-grow-1">Save end date</button>
+                  <button type="button" class="btn btn-ghost" id="end-earlier-cancel">Cancel</button>
+                </div>
+              </form>
+              <button type="button" class="choice-button" data-end-choice="still"><span aria-hidden="true">🩸</span> No, I'm still bleeding</button>
+              <button type="button" class="choice-button" data-end-choice="unsure"><span aria-hidden="true">🤔</span> I'm not sure</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Period history -->
+      <section class="lv-card mt-4" aria-labelledby="periods-title">
+        <h2 id="periods-title" class="card-title-sm">Recorded periods</h2>
+        <ul class="period-list" id="period-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <!-- Day modal: log or edit flow -->
+  <div class="modal fade" id="day-modal" tabindex="-1" aria-labelledby="day-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="day-modal-title">Day</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="day-status" id="day-status"></p>
+
+          <form id="flow-form" novalidate>
+            <fieldset>
+              <legend class="form-label">Blood flow</legend>
+              <div class="chip-group" id="flow-options"></div>
+            </fieldset>
+            <p class="small text-muted-soft mt-2 mb-0" id="flow-none-note" hidden>Logging "None" doesn't end your period — you'll confirm that separately.</p>
+            <div class="calm-note mt-3" id="flow-heavy-note" hidden>
+              <i class="bi bi-heart" aria-hidden="true"></i>
+              <span>If this is unusual or keeps happening, consider talking to a healthcare professional.</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+              <button type="submit" class="btn btn-luniva flex-grow-1">Save flow</button>
+              <button type="button" class="btn btn-ghost" id="clear-flow" hidden>Clear flow</button>
+            </div>
+          </form>
+
+          <p class="small text-muted-soft mb-0" id="future-note" hidden>You can log flow for today or earlier days.</p>
+
+          <div class="day-actions" id="day-actions"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Start modal: log a period -->
+  <div class="modal fade" id="start-modal" tabindex="-1" aria-labelledby="start-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="start-form" novalidate>
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="start-modal-title">Log a period</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="start-alert" class="alert-inline mb-3" role="alert"></div>
+            <label class="form-label" for="start-date">Start date</label>
+            <input class="form-control" type="date" id="start-date" aria-describedby="start-date-error" required>
+            <div class="invalid-feedback" id="start-date-error"></div>
+
+            <div class="form-check mt-3">
+              <input class="form-check-input" type="checkbox" id="start-has-ended" aria-controls="start-end-wrap">
+              <label class="form-check-label" for="start-has-ended">This period has already ended</label>
+            </div>
+            <div id="start-end-wrap" class="mt-2" hidden>
+              <label class="form-label" for="start-end-date">End date</label>
+              <input class="form-control" type="date" id="start-end-date" aria-describedby="start-end-date-error">
+              <div class="invalid-feedback" id="start-end-date-error"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luniva">Save period</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- End-first modal: confirm the active period's end before starting a new one -->
+  <div class="modal fade" id="end-first-modal" tabindex="-1" aria-labelledby="end-first-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="end-first-form" novalidate>
+          <div class="modal-header">
+            <h2 class="modal-title fs-5" id="end-first-title">First, when did your current period end?</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="text-muted-soft" id="end-first-intro"></p>
+            <label class="form-label" for="end-first-date">End date of current period</label>
+            <input class="form-control" type="date" id="end-first-date" aria-describedby="end-first-date-error" required>
+            <div class="invalid-feedback" id="end-first-date-error"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-luniva">Save &amp; start new period</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirmation -->
+  <div class="modal fade" id="delete-modal" tabindex="-1" aria-labelledby="delete-modal-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="delete-modal-title">Remove this period?</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0" id="delete-modal-text"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Keep it</button>
+          <button type="button" class="btn btn-danger-soft" id="delete-confirm">Remove period</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/tracker.js"></script>
+</body>
+</html>

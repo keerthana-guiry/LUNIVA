@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app-nav"></div>
+
+  <main id="main" class="app-main">
+    <div class="app-container narrow-container" id="settings-page">
+      <header class="page-header">
+        <h1>Settings</h1>
+        <p>Make Luniva work the way you like.</p>
+      </header>
+
+      <!-- Profile -->
+      <section class="lv-card settings-section" aria-labelledby="profile-title">
+        <h2 id="profile-title" class="card-title-sm"><i class="bi bi-person-circle" aria-hidden="true"></i> Profile</h2>
+        <form id="profile-form" novalidate>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label" for="profile-name">Name</label>
+              <input class="form-control" type="text" id="profile-name" autocomplete="given-name" aria-describedby="profile-name-error" required>
+              <div class="invalid-feedback" id="profile-name-error"></div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="profile-email">Email</label>
+              <input class="form-control" type="email" id="profile-email" autocomplete="email" inputmode="email" aria-describedby="profile-email-error" required>
+              <div class="invalid-feedback" id="profile-email-error"></div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="profile-height">Height (cm) <span class="text-muted-soft fw-normal">— optional</span></label>
+              <input class="form-control" type="number" id="profile-height" min="50" max="250" step="0.1" inputmode="decimal" aria-describedby="profile-height-error">
+              <div class="invalid-feedback" id="profile-height-error"></div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-luniva mt-3">Save profile</button>
+        </form>
+      </section>
+
+      <!-- Cycle -->
+      <section class="lv-card settings-section" aria-labelledby="cycle-settings-title">
+        <h2 id="cycle-settings-title" class="card-title-sm"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Cycle</h2>
+        <form id="cycle-form" novalidate>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label" for="settings-cycle-length">Average cycle length (days)</label>
+              <input class="form-control" type="number" id="settings-cycle-length" min="20" max="45" step="1" inputmode="numeric" aria-describedby="settings-cycle-length-error" required>
+              <div class="invalid-feedback" id="settings-cycle-length-error"></div>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label" for="settings-period-length">Average period duration (days)</label>
+              <input class="form-control" type="number" id="settings-period-length" min="2" max="10" step="1" inputmode="numeric" aria-describedby="settings-period-length-error" required>
+              <div class="invalid-feedback" id="settings-period-length-error"></div>
+            </div>
+          </div>
+          <p class="form-text mt-2 mb-3" id="cycle-settings-note"></p>
+          <fieldset>
+            <legend class="form-label">Pad reminder</legend>
+            <div class="segmented">
+              <input type="radio" name="settings-pad-days" id="settings-pad-1" value="1"><label for="settings-pad-1">1 day before</label>
+              <input type="radio" name="settings-pad-days" id="settings-pad-2" value="2"><label for="settings-pad-2">2 days</label>
+              <input type="radio" name="settings-pad-days" id="settings-pad-3" value="3"><label for="settings-pad-3">3 days</label>
+            </div>
+          </fieldset>
+          <button type="submit" class="btn btn-luniva mt-3">Save cycle settings</button>
+        </form>
+      </section>
+
+      <!-- Tracking -->
+      <section class="lv-card settings-section" aria-labelledby="tracking-title">
+        <h2 id="tracking-title" class="card-title-sm"><i class="bi bi-ui-checks" aria-hidden="true"></i> Tracking</h2>
+        <p class="text-muted-soft small">Your daily check-in shows only what's switched on. Changes save automatically.</p>
+        <div class="toggle-list" id="tracking-toggles">
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-cream" aria-hidden="true">⚖️</span>
+            <div class="toggle-text"><label for="setting-trackWeight">Track weight</label><small>Off by default · shown neutrally, no goals</small></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-trackWeight" data-setting="trackWeight"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🤕</span>
+            <div class="toggle-text"><label for="setting-tracking-pain">Pain</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-pain" data-tracking-key="pain"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🩸</span>
+            <div class="toggle-text"><label for="setting-tracking-flow">Blood flow</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-flow" data-tracking-key="flow"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">😴</span>
+            <div class="toggle-text"><label for="setting-tracking-sleep">Sleep</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-sleep" data-tracking-key="sleep"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">🙂</span>
+            <div class="toggle-text"><label for="setting-tracking-mood">Mood</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-mood" data-tracking-key="mood"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-cream" aria-hidden="true">🍫</span>
+            <div class="toggle-text"><label for="setting-tracking-cravings">Cravings</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-cravings" data-tracking-key="cravings"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-cream" aria-hidden="true">📝</span>
+            <div class="toggle-text"><label for="setting-tracking-symptoms">Symptoms</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="setting-tracking-symptoms" data-tracking-key="symptoms"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notifications -->
+      <section class="lv-card settings-section" aria-labelledby="notif-title">
+        <h2 id="notif-title" class="card-title-sm"><i class="bi bi-bell" aria-hidden="true"></i> Notifications</h2>
+        <p class="text-muted-soft small">In-app reminders, shown when you open Luniva. Changes save automatically.</p>
+        <div class="toggle-list">
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🔔</span>
+            <div class="toggle-text"><label for="notify-period">Period reminder</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-period" data-notification-key="period"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">👜</span>
+            <div class="toggle-text"><label for="notify-pad">Pad reminder</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-pad" data-notification-key="pad"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-cream" aria-hidden="true">📝</span>
+            <div class="toggle-text"><label for="notify-checkin">Daily check-in</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-checkin" data-notification-key="checkin"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-lavender" aria-hidden="true">😴</span>
+            <div class="toggle-text"><label for="notify-sleep">Sleep reminder</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-sleep" data-notification-key="sleep"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🌷</span>
+            <div class="toggle-text"><label for="notify-motivation">Motivation</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-motivation" data-notification-key="motivation"></div>
+          </div>
+          <div class="toggle-row">
+            <span class="icon-bubble icon-bubble-cream" aria-hidden="true">🌙</span>
+            <div class="toggle-text"><label for="notify-companion">Companion</label></div>
+            <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-companion" data-notification-key="companion"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Privacy -->
+      <section class="lv-card settings-section" aria-labelledby="privacy-settings-title">
+        <h2 id="privacy-settings-title" class="card-title-sm"><i class="bi bi-shield-lock" aria-hidden="true"></i> Privacy</h2>
+        <p class="text-muted-soft small">All of your Luniva data is stored only in this browser on this device.</p>
+        <div class="privacy-actions">
+          <button type="button" class="btn btn-outline-luniva" id="export-data">
+            <i class="bi bi-download" aria-hidden="true"></i> Export Data
+          </button>
+          <button type="button" class="btn btn-danger-soft" data-bs-toggle="modal" data-bs-target="#delete-data-modal">
+            <i class="bi bi-trash3" aria-hidden="true"></i> Delete Data
+          </button>
+          <a class="btn btn-ghost" href="login.html?logout=1">
+            <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Logout
+          </a>
+        </div>
+      </section>
+
+      <!-- About -->
+      <section class="lv-card settings-section" aria-labelledby="about-title">
+        <h2 id="about-title" class="card-title-sm"><i class="bi bi-info-circle" aria-hidden="true"></i> About</h2>
+        <p class="mb-2"><strong>Luniva</strong> · Your Cycle. Your Rhythm. Your Luniva.</p>
+        <p class="calm-note mb-0">
+          <i class="bi bi-heart-pulse" aria-hidden="true"></i>
+          <span>Luniva helps you record and understand your personal patterns. It does not provide medical diagnosis or replace professional medical advice.</span>
+        </p>
+      </section>
+    </div>
+  </main>
+
+  <!-- Delete data confirmation -->
+  <div class="modal fade" id="delete-data-modal" tabindex="-1" aria-labelledby="delete-data-title" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title fs-5" id="delete-data-title">Delete all your Luniva data?</h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>This permanently removes your profile, periods, check-ins, settings and notifications from this device. It can't be undone.</p>
+          <p class="small text-muted-soft mb-0">Tip: use <strong>Export Data</strong> first if you'd like to keep a copy.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Keep my data</button>
+          <button type="button" class="btn btn-danger-soft" id="confirm-delete-data">Yes, delete everything</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/auth.js"></script>
+</body>
+</html>

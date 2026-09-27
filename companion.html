@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Companion · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app-nav"></div>
+
+  <main id="main" class="app-main">
+    <div class="app-container narrow-container">
+      <header class="page-header companion-header">
+        <h1>A little space for you 🌙</h1>
+        <p>No tracking here — just a moment of care.</p>
+      </header>
+
+      <!-- How are you feeling? -->
+      <section class="lv-card lv-card-lavender" aria-labelledby="feeling-title">
+        <h2 id="feeling-title" class="card-title-sm">How are you feeling?</h2>
+        <div class="emotion-grid" role="group" aria-labelledby="feeling-title">
+          <button type="button" class="emotion-button" data-emotion="stressed" aria-pressed="false"><span aria-hidden="true">😵‍💫</span>Stressed</button>
+          <button type="button" class="emotion-button" data-emotion="scared" aria-pressed="false"><span aria-hidden="true">😨</span>Scared</button>
+          <button type="button" class="emotion-button" data-emotion="sad" aria-pressed="false"><span aria-hidden="true">😢</span>Sad</button>
+          <button type="button" class="emotion-button" data-emotion="angry" aria-pressed="false"><span aria-hidden="true">😠</span>Angry</button>
+          <button type="button" class="emotion-button" data-emotion="overwhelmed" aria-pressed="false"><span aria-hidden="true">🥺</span>Overwhelmed</button>
+          <button type="button" class="emotion-button" data-emotion="tired" aria-pressed="false"><span aria-hidden="true">🥱</span>Tired</button>
+          <button type="button" class="emotion-button" data-emotion="fine" aria-pressed="false"><span aria-hidden="true">🙂</span>Fine</button>
+        </div>
+
+        <div class="message-card" id="support-card" aria-live="polite" hidden>
+          <p class="message-label"></p>
+          <p class="message-text"></p>
+        </div>
+        <button type="button" class="btn btn-soft mt-3" id="another-message" hidden>
+          <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Another message
+        </button>
+      </section>
+
+      <!-- Breathing exercise (stressed / scared / overwhelmed / angry) -->
+      <section class="lv-card mt-3 breathing-card" id="breathing-section" aria-labelledby="breathing-title" hidden>
+        <h2 id="breathing-title" class="card-title-sm">Take a slow breath</h2>
+        <div class="breathing-wrap">
+          <div class="breathing-circle" id="breathing-circle" aria-hidden="true"></div>
+          <p class="breathing-text" id="breathing-text" aria-live="polite">Ready when you are</p>
+        </div>
+        <button type="button" class="btn btn-outline-luniva" id="breathing-toggle" aria-pressed="false">
+          <i class="bi bi-play-fill" aria-hidden="true"></i> Breathe with me
+        </button>
+      </section>
+
+      <p class="calm-note mt-3" id="support-only-note" hidden>
+        <i class="bi bi-heart" aria-hidden="true"></i>
+        <span>Let's stay with comfort for now. Take all the time you need.</span>
+      </p>
+
+      <!-- Distract me -->
+      <section class="lv-card mt-3" id="distract-section" aria-labelledby="distract-title">
+        <h2 id="distract-title" class="card-title-sm">Distract me</h2>
+        <p class="text-muted-soft">A tiny break for your mind.</p>
+        <div class="distract-grid">
+          <button type="button" class="distract-button" data-distract="joke"><span aria-hidden="true">😂</span> Tell me a joke</button>
+          <button type="button" class="distract-button" data-distract="question"><span aria-hidden="true">💭</span> Random question</button>
+          <button type="button" class="distract-button" data-distract="challenge"><span aria-hidden="true">✨</span> Tiny challenge</button>
+          <button type="button" class="distract-button" data-distract="motivate"><span aria-hidden="true">🌷</span> Motivate me</button>
+        </div>
+        <div class="message-card" id="distract-card" aria-live="polite" hidden>
+          <p class="message-label"></p>
+          <p class="message-text"></p>
+        </div>
+      </section>
+
+      <p class="helpline-note">
+        <i class="bi bi-telephone" aria-hidden="true"></i>
+        If you're struggling, talking to someone you trust or a support helpline can help.
+      </p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/companion.js"></script>
+</body>
+</html>

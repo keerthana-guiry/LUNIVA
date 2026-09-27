@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Home · Luniva</title>
+  <meta name="theme-color" content="#fbf7f2">
+  <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="app-nav"></div>
+
+  <main id="main" class="app-main">
+    <div class="app-container" id="dashboard-page">
+      <header class="page-header">
+        <p class="eyebrow mb-1" id="today-date"></p>
+        <h1 id="greeting">Hello 🌷</h1>
+        <p>Let's see how you're feeling today.</p>
+      </header>
+
+      <!-- Banners (shown only when relevant) -->
+      <div class="banner banner-lavender mb-3" id="long-period-banner" hidden>
+        <span class="banner-icon" aria-hidden="true">❓</span>
+        <div class="flex-grow-1">
+          <strong>Has your period ended?</strong>
+          <p class="mb-0">Your period has been marked active for <span id="long-period-days"></span>. Luniva never closes it automatically — let us know when it ends.</p>
+        </div>
+        <a class="btn btn-soft" href="tracker.html#period-end">Update</a>
+      </div>
+
+      <div class="banner banner-rose mb-3" id="pad-banner" role="status" hidden>
+        <span class="banner-icon" aria-hidden="true">👜</span>
+        <div class="flex-grow-1">
+          <strong>Pad reminder</strong>
+          <p class="mb-0">Your period may be approaching. You might want to carry a pad today.</p>
+        </div>
+      </div>
+
+      <div class="row g-3 g-lg-4">
+        <!-- Cycle card -->
+        <div class="col-lg-7">
+          <section class="lv-card lv-card-lavender cycle-card h-100" id="cycle-card" aria-labelledby="cycle-title">
+            <h2 id="cycle-title" class="card-title-sm">Your cycle</h2>
+            <div class="cycle-card-body">
+              <div class="cycle-ring" aria-hidden="true">
+                <svg viewBox="0 0 120 120">
+                  <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+                  <circle class="ring-progress" id="cycle-ring-progress" cx="60" cy="60" r="52"></circle>
+                </svg>
+                <div class="cycle-ring-center" id="cycle-main"></div>
+              </div>
+              <div class="cycle-text">
+                <p class="cycle-status" id="cycle-status" aria-live="polite"></p>
+                <p class="cycle-detail" id="cycle-detail"></p>
+                <a class="btn btn-outline-luniva" href="tracker.html">
+                  <i class="bi bi-calendar-heart" aria-hidden="true"></i> Open Period Tracker
+                </a>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- Today's check-in -->
+        <div class="col-lg-5">
+          <section class="lv-card h-100" aria-labelledby="checkin-title">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+              <h2 id="checkin-title" class="card-title-sm mb-0">Today's Check-in</h2>
+              <span class="status-pill" id="checkin-status" hidden></span>
+            </div>
+            <p class="text-muted-soft mb-3">How are you feeling today?</p>
+
+            <div class="feeling-row" role="group" aria-label="How are you feeling today?">
+              <button type="button" class="feeling-button" data-feeling="great" aria-pressed="false"><span aria-hidden="true">😊</span>Great</button>
+              <button type="button" class="feeling-button" data-feeling="good" aria-pressed="false"><span aria-hidden="true">🙂</span>Good</button>
+              <button type="button" class="feeling-button" data-feeling="okay" aria-pressed="false"><span aria-hidden="true">😐</span>Okay</button>
+              <button type="button" class="feeling-button" data-feeling="low" aria-pressed="false"><span aria-hidden="true">😔</span>Low</button>
+              <button type="button" class="feeling-button" data-feeling="difficult" aria-pressed="false"><span aria-hidden="true">😣</span>Difficult</button>
+            </div>
+            <div class="feeling-reply" id="feeling-reply" aria-live="polite" hidden></div>
+
+            <p class="small fw-semibold text-muted-soft mt-3 mb-2">Quick log</p>
+            <div class="chip-group mb-3">
+              <a class="quick-chip" href="checkin.html#section-pain"><span aria-hidden="true">🤕</span> Pain</a>
+              <a class="quick-chip" href="checkin.html#section-flow"><span aria-hidden="true">🩸</span> Flow</a>
+              <a class="quick-chip" href="checkin.html#section-mood"><span aria-hidden="true">🙂</span> Mood</a>
+              <a class="quick-chip" href="checkin.html#section-energy"><span aria-hidden="true">⚡</span> Energy</a>
+            </div>
+
+            <a class="btn btn-luniva w-100" href="checkin.html" id="checkin-button">
+              Complete Check-in <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+          </section>
+        </div>
+      </div>
+
+      <!-- Quick statistics -->
+      <section class="mt-4" aria-labelledby="stats-title">
+        <h2 id="stats-title" class="section-title">Quick statistics</h2>
+        <div class="row g-3">
+          <div class="col-6 col-lg-3">
+            <article class="lv-card stat-card h-100" id="stat-cycle">
+              <span class="icon-bubble icon-bubble-lavender" aria-hidden="true"><i class="bi bi-arrow-repeat"></i></span>
+              <h3 class="stat-label">Average Cycle</h3>
+              <p class="stat-value"></p>
+              <p class="stat-note"></p>
+            </article>
+          </div>
+          <div class="col-6 col-lg-3">
+            <article class="lv-card stat-card h-100" id="stat-period">
+              <span class="icon-bubble icon-bubble-rose" aria-hidden="true"><i class="bi bi-droplet"></i></span>
+              <h3 class="stat-label">Average Period</h3>
+              <p class="stat-value"></p>
+              <p class="stat-note"></p>
+            </article>
+          </div>
+          <div class="col-6 col-lg-3">
+            <article class="lv-card stat-card h-100" id="stat-pain">
+              <span class="icon-bubble icon-bubble-cream" aria-hidden="true"><i class="bi bi-activity"></i></span>
+              <h3 class="stat-label">Average Pain</h3>
+              <p class="stat-value"></p>
+              <p class="stat-note"></p>
+            </article>
+          </div>
+          <div class="col-6 col-lg-3">
+            <article class="lv-card stat-card h-100" id="stat-sleep">
+              <span class="icon-bubble icon-bubble-lavender" aria-hidden="true"><i class="bi bi-moon"></i></span>
+              <h3 class="stat-label">Average Sleep</h3>
+              <p class="stat-value"></p>
+              <p class="stat-note"></p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Support card -->
+      <section class="lv-card lv-card-rose support-card mt-4" aria-labelledby="support-title">
+        <div class="support-moon" aria-hidden="true">🌙</div>
+        <div class="flex-grow-1">
+          <h2 id="support-title" class="card-title-sm mb-1">Need a little comfort?</h2>
+          <p class="text-muted-soft mb-0">Kind words, a joke, or a tiny distraction — whenever you need it.</p>
+        </div>
+        <a class="btn btn-luniva" href="companion.html">Open Luniva Companion <span aria-hidden="true">🌙</span></a>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/notifications.js"></script>
+</body>
+</html>
