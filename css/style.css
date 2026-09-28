@@ -18,6 +18,7 @@
     14. Insights & history
     15. Companion
     16. Notifications & settings
+    17. Legal pages (privacy, terms)
    ========================================================= */
 
 /* ---------- 1. DESIGN TOKENS ---------- */
@@ -2861,4 +2862,184 @@ button.chip-button[aria-pressed="true"] {
     grid-template-columns: minmax(0, 6rem) minmax(0, 1fr) 5rem;
     gap: 0.5rem;
   }
+}
+
+/* ---------- 17. LEGAL PAGES ---------- */
+.legal-header {
+  background: rgba(251, 247, 242, 0.92);
+  border-bottom: 1px solid var(--lv-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.legal-header-inner {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.legal-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+.legal-nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.9rem;
+  border-radius: var(--lv-radius-pill);
+  color: var(--lv-ink-soft);
+  font-weight: 500;
+  text-decoration: none;
+}
+.legal-nav a:hover,
+.legal-nav a[aria-current="page"] {
+  background: var(--lv-rose-50);
+  color: var(--lv-rose-700);
+}
+.legal-page {
+  max-width: 780px;
+  padding-top: 2.5rem;
+  padding-bottom: 3rem;
+}
+.legal-title h1 {
+  font-size: clamp(1.9rem, 5vw, 2.6rem);
+  margin: 0.6rem 0 0.4rem;
+}
+.legal-updated {
+  color: var(--lv-muted);
+  font-size: 0.9rem;
+}
+.legal-summary {
+  margin: 1.75rem 0;
+  padding: 1.5rem;
+  border-radius: var(--lv-radius-lg);
+  background: linear-gradient(145deg, var(--lv-lavender-50), var(--lv-rose-50));
+  border: 1px solid var(--lv-border);
+}
+.legal-summary h2 {
+  font-family: var(--lv-font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+.legal-summary ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+.legal-summary li + li {
+  margin-top: 0.5rem;
+}
+.legal-toc {
+  margin-bottom: 2rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--lv-radius);
+  background: var(--lv-white);
+  border: 1px solid var(--lv-border);
+}
+.legal-toc-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--lv-muted);
+  margin-bottom: 0.5rem;
+}
+.legal-toc ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  columns: 2;
+  column-gap: 2rem;
+}
+.legal-toc li {
+  padding: 0.2rem 0;
+  break-inside: avoid;
+}
+@media (max-width: 575.98px) {
+  .legal-toc ol {
+    columns: 1;
+  }
+}
+.legal-section {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--lv-border);
+  scroll-margin-top: 80px;
+}
+.legal-section h2 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+.legal-section p,
+.legal-section li {
+  color: var(--lv-ink-soft);
+}
+.legal-section ul {
+  padding-left: 1.2rem;
+}
+.legal-section li + li {
+  margin-top: 0.35rem;
+}
+.legal-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+.legal-table {
+  width: 100%;
+  font-size: 0.9rem;
+  border-collapse: collapse;
+}
+.legal-table th,
+.legal-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--lv-border);
+  text-align: left;
+  vertical-align: top;
+}
+.legal-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--lv-muted);
+}
+@media (max-width: 575.98px) {
+  .legal-table thead {
+    display: none;
+  }
+  .legal-table tr {
+    display: block;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--lv-border);
+  }
+  .legal-table td {
+    display: block;
+    padding: 0.1rem 0;
+    border: 0;
+  }
+  .legal-table td:first-child {
+    font-weight: 700;
+    color: var(--lv-ink);
+  }
+}
+.legal-footer-links {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--lv-border);
+  text-align: center;
+}
+.auth-legal-note {
+  margin: 0.75rem 0 0;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--lv-muted);
+}
+.app-footer-links {
+  margin-top: 0.5rem;
+}
+.app-footer-links a {
+  color: var(--lv-muted);
+  display: inline-block;
+  padding: 0.5rem 0.4rem;
 }

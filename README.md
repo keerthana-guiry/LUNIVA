@@ -37,6 +37,8 @@ history.html        Filterable table of records (cards on phones)
 companion.html      Supportive messages, jokes, questions, tiny challenges
 notifications.html  In-app notification centre
 settings.html       Profile, cycle, tracking, notifications, privacy, about
+privacy.html        Privacy Policy
+terms.html          Terms of Use
 
 css/style.css       All styles (design tokens at the top)
 js/config.js        Supabase project URL + public anon key

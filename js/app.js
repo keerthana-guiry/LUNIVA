@@ -704,7 +704,8 @@ function renderAppFooter() {
   footer.className = "app-footer";
   footer.innerHTML =
     "<p>Luniva helps you record and understand your personal patterns. " +
-    "It does not provide medical diagnosis or replace professional medical advice.</p>";
+    "It does not provide medical diagnosis or replace professional medical advice.</p>" +
+    '<p class="app-footer-links"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a></p>';
   main.appendChild(footer);
 }
 
