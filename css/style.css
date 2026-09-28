@@ -188,6 +188,20 @@ a {
   color: var(--lv-white);
   box-shadow: 0 6px 16px rgba(184, 68, 106, 0.25);
 }
+.btn-luniva:disabled,
+.btn-luniva.disabled {
+  background: var(--lv-rose-600);
+  border-color: var(--lv-rose-600);
+  color: var(--lv-white);
+  box-shadow: none;
+  opacity: 0.5;
+}
+.btn-outline-luniva:disabled {
+  background: var(--lv-white);
+  border-color: var(--lv-border-strong);
+  color: var(--lv-ink);
+  opacity: 0.5;
+}
 .btn-luniva:hover,
 .btn-luniva:focus-visible {
   background: var(--lv-rose-700);
