@@ -179,12 +179,36 @@ function guardAuthConfigured(alertElement) {
   return false;
 }
 
+/**
+ * Ask Supabase whether Google sign-in is switched on, so people see a
+ * friendly message instead of a raw error page. If the check itself
+ * fails (e.g. offline), we let the sign-in attempt continue.
+ */
+function isGoogleEnabled() {
+  return fetch(LUNIVA_CONFIG.supabaseUrl + "/auth/v1/settings", {
+    headers: { apikey: LUNIVA_CONFIG.supabaseAnonKey }
+  })
+    .then(function (response) { return response.ok ? response.json() : null; })
+    .then(function (settings) {
+      return !(settings && settings.external && settings.external.google === false);
+    })
+    .catch(function () { return true; });
+}
+
 /** Start Google sign-in. Google sends the user back to login.html. */
 function startGoogleSignIn(button, alertElement) {
   const client = getAuthClient();
   if (!client) return;
   setBusy(button, true, "Opening Google…");
-  client.auth.signInWithOAuth({
+  isGoogleEnabled().then(function (enabled) {
+    if (enabled) return openGoogleSignIn(client, button, alertElement);
+    setBusy(button, false);
+    showFormAlert(alertElement, "Google sign-in isn't available yet. Please use your email and password, or an emailed login code.");
+  });
+}
+
+function openGoogleSignIn(client, button, alertElement) {
+  return client.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: pageUrl("login.html") }
   }).then(function (result) {

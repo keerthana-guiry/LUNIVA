@@ -72,9 +72,9 @@ Supabase's built-in email service is only for testing: it sends just a few email
 ## 5. Tell Supabase where your website lives
 
 **Authentication → URL Configuration**
-- **Site URL**: your live site, e.g. `https://luniva.netlify.app`
+- **Site URL**: your live site, e.g. `https://myluniva.netlify.app`
 - **Redirect URLs**: add each place Luniva runs, ending in `/login.html`:
-  - `https://luniva.netlify.app/login.html`
+  - `https://myluniva.netlify.app/login.html`
   - `http://localhost:8000/login.html` (for testing on your computer)
 
 Google sign-in only returns people to URLs on this list.
@@ -86,7 +86,7 @@ Google sign-in only returns people to URLs on this list.
 2. **APIs & Services → OAuth consent screen**: choose **External**, fill in the app name `Luniva`, your support email and your website, and save. (While it's in "Testing" mode, add your own Google account under **Test users**.)
 3. **APIs & Services → Credentials → Create credentials → OAuth client ID**:
    - Application type: **Web application**
-   - **Authorized JavaScript origins**: your site, e.g. `https://luniva.netlify.app` (and `http://localhost:8000` for testing)
+   - **Authorized JavaScript origins**: your site, e.g. `https://myluniva.netlify.app` (and `http://localhost:8000` for testing)
    - **Authorized redirect URIs**: copy the **Callback URL** shown in Supabase (next step). It looks like `https://YOUR-PROJECT.supabase.co/auth/v1/callback`
 4. Click **Create** and copy the **Client ID** and **Client secret**.
 
