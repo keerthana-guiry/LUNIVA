@@ -32,7 +32,7 @@
           <li><i class="bi bi-check-circle-fill"></i> Track periods, flow, pain and sleep</li>
           <li><i class="bi bi-check-circle-fill"></i> Get gentle, customizable reminders</li>
           <li><i class="bi bi-check-circle-fill"></i> Find comfort in the Companion space</li>
-          <li><i class="bi bi-check-circle-fill"></i> Everything stays on your device</li>
+          <li><i class="bi bi-check-circle-fill"></i> Your health records stay on your device</li>
         </ul>
       </div>
     </aside>
@@ -51,10 +51,12 @@
       </header>
 
       <main id="main" class="auth-card">
-        <h1>Create your Luniva</h1>
-        <p class="text-muted-soft mb-4">It only takes a minute. No password is ever stored in this demo.</p>
+        <!-- Step: account details -->
+        <section class="auth-panel" id="signup-panel" aria-labelledby="signup-title">
+        <h1 id="signup-title" tabindex="-1">Create your Luniva</h1>
+        <p class="text-muted-soft mb-4">It only takes a minute. We'll email you a code to verify your address.</p>
 
-        <div id="existing-profile-notice" class="alert-inline alert-inline-success mb-3" role="status"></div>
+        <div id="signup-alert" class="alert-inline mb-3" role="alert"></div>
 
         <form id="signup-form" novalidate>
           <div class="mb-3">
@@ -109,14 +111,86 @@
           </button>
         </form>
 
+        <div class="divider-text">or</div>
+
+        <button class="btn btn-google w-100" type="button" id="google-button">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/>
+            <path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/>
+            <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.2 0-11.5-4.1-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/>
+          </svg>
+          Continue with Google
+        </button>
+
         <p class="text-center text-muted-soft mt-4 mb-0">
           Already have a Luniva? <a href="login.html">Log in</a>
         </p>
+        </section>
+
+        <!-- Step: enter the 6-digit code from the email -->
+        <section class="auth-panel" id="otp-panel" aria-labelledby="otp-title" hidden>
+          <div class="otp-icon" aria-hidden="true">✉️</div>
+          <h1 id="otp-title" tabindex="-1">Verify your email</h1>
+          <p class="text-muted-soft mb-4"><span id="otp-intro">We sent a 6-digit code to</span> <strong id="otp-email"></strong>.</p>
+
+          <div id="otp-alert" class="alert-inline mb-3" role="alert"></div>
+
+          <form id="otp-form" novalidate>
+            <label class="form-label" for="otp-code">6-digit code</label>
+            <input class="form-control otp-input" type="text" id="otp-code" inputmode="numeric" autocomplete="one-time-code"
+                   maxlength="6" placeholder="••••••" aria-describedby="otp-code-error" required>
+            <div class="invalid-feedback" id="otp-code-error"></div>
+
+            <div id="otp-new-password" class="mt-3" hidden>
+              <label class="form-label" for="otp-password">New password</label>
+              <div class="input-with-action mb-3">
+                <input class="form-control" type="password" id="otp-password" autocomplete="new-password"
+                       placeholder="At least 8 characters" aria-describedby="otp-password-error">
+                <button class="input-action" type="button" data-toggle-password="otp-password" aria-label="Show password" aria-pressed="false">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+                <div class="invalid-feedback" id="otp-password-error"></div>
+              </div>
+              <label class="form-label" for="otp-confirm">Confirm new password</label>
+              <input class="form-control" type="password" id="otp-confirm" autocomplete="new-password" aria-describedby="otp-confirm-error">
+              <div class="invalid-feedback" id="otp-confirm-error"></div>
+            </div>
+
+            <button class="btn btn-luniva btn-lg w-100 mt-4" type="submit" id="otp-submit">Verify &amp; continue</button>
+          </form>
+
+          <div class="otp-footer">
+            <button type="button" class="btn btn-ghost btn-sm" id="otp-resend" disabled>Resend code</button>
+            <span class="small text-muted-soft" id="otp-timer" aria-live="polite"></span>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm mt-2" id="otp-back">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i> Use a different email
+          </button>
+        </section>
+
+        <!-- Step: this device holds another account's data -->
+        <section class="auth-panel" id="switch-panel" aria-labelledby="switch-title" hidden>
+          <h1 id="switch-title" tabindex="-1">Switch accounts on this device?</h1>
+          <p>This device has Luniva data for <strong id="switch-old-email"></strong>.
+             You're signing in as <strong id="switch-new-email"></strong>.</p>
+          <p class="calm-note">
+            <i class="bi bi-info-circle" aria-hidden="true"></i>
+            <span>Your health records are stored only on this device, so continuing will remove the other account's records here.
+            To keep a copy, sign back in as that account and use Settings → Export Data first.</span>
+          </p>
+          <div class="d-grid gap-2 mt-3">
+            <button type="button" class="btn btn-luniva" id="switch-confirm">Remove it and continue</button>
+            <button type="button" class="btn btn-outline-luniva" id="switch-cancel">Cancel and sign out</button>
+          </div>
+        </section>
       </main>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
   <script src="js/auth.js"></script>

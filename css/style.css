@@ -1069,11 +1069,54 @@ button.chip-button[aria-pressed="true"] {
   background: var(--lv-lavender-100);
   color: var(--lv-lavender-700);
 }
-.btn-google:disabled {
-  opacity: 1;
-  color: var(--lv-muted);
+.btn-google {
+  background: var(--lv-white);
+  border: 1px solid var(--lv-border-strong);
+  color: var(--lv-ink);
+}
+.btn-google:hover,
+.btn-google:focus-visible {
   background: var(--lv-cream);
-  border: 1px solid var(--lv-border);
+  border-color: var(--lv-lavender-300);
+  color: var(--lv-ink);
+}
+.btn-google:disabled {
+  opacity: 0.6;
+}
+
+/* Email code step */
+.otp-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 18px;
+  background: var(--lv-lavender-100);
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+}
+.otp-input {
+  font-size: 1.6rem;
+  font-weight: 600;
+  letter-spacing: 0.5em;
+  text-align: center;
+  padding-left: 1.2em;
+  font-variant-numeric: tabular-nums;
+}
+.otp-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+.auth-panel:not([hidden]) {
+  animation: fade-up 0.35s var(--lv-ease) both;
+}
+.form-control[readonly] {
+  background: var(--lv-cream);
+  color: var(--lv-muted);
 }
 
 /* ---------- 7. ONBOARDING ---------- */

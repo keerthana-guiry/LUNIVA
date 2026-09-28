@@ -5,18 +5,22 @@ Luniva — a privacy-first menstrual health & wellness companion. Track periods,
 
 ## Running it
 
-No build step or backend is needed. Serve the folder with any static server and open `index.html`, for example:
+No build step is needed. Serve the folder with any static server and open `index.html`, for example:
 
 ```bash
 python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-Bootstrap 5.3.3 and Bootstrap Icons 1.11.3 load from the jsDelivr CDN.
+Bootstrap 5.3.3, Bootstrap Icons 1.11.3 and Supabase JS 2.117.2 load from the jsDelivr CDN.
+
+## Accounts
+
+Sign-up, email verification codes, login codes, password reset and Google sign-in use **Supabase Auth**. Until you add your project details to `js/config.js`, the sign-up and login pages explain that accounts aren't connected yet. Follow **[SETUP-ACCOUNTS.md](SETUP-ACCOUNTS.md)** to turn them on.
 
 ## Privacy
 
-This prototype stores everything in the browser's `localStorage` on your device. Nothing is sent anywhere. Passwords are validated on sign-up but never stored, and login checks only the email. Settings → Privacy lets you export all data as JSON or delete it.
+Passwords are handled by Supabase and never stored in the browser. Health records (periods, check-ins, settings, notifications) are stored only in the browser's `localStorage` on each device and are not sent anywhere. Settings → Privacy lets you export all data as JSON or delete it.
 
 ## Structure
 
@@ -35,10 +39,12 @@ notifications.html  In-app notification centre
 settings.html       Profile, cycle, tracking, notifications, privacy, about
 
 css/style.css       All styles (design tokens at the top)
+js/config.js        Supabase project URL + public anon key
 js/storage.js       The only file that touches localStorage
 js/app.js           Date helpers, cycle calculations, toasts, route guard,
                     navigation, shared option lists, dashboard
-js/auth.js          Sign up, log in, log out, onboarding, settings
+js/auth.js          Sign up + email code, log in (password / code / Google),
+                    password reset, log out, onboarding, settings
 js/tracker.js       Period tracker
 js/checkin.js       Daily check-in
 js/insights.js      Insights and history
@@ -53,11 +59,12 @@ App pages load `storage.js`, then `app.js`, then `notifications.js`, then their 
 
 | Key | Shape |
 | --- | --- |
-| `luniva_user` | `{ name, email, heightCm, createdAt, onboardingComplete }` |
+| `luniva_user` | `{ id, name, email, heightCm, createdAt, onboardingComplete }` |
 | `luniva_settings` | `{ cycleLength, periodLength, padReminderDays, trackWeight, tracking{…}, notifications{…} }` |
 | `luniva_periods` | `[{ id, startDate, endDate (null while active), status: "active" \| "ended" }]` |
 | `luniva_dailyLogs` | `{ "YYYY-MM-DD": { flow, pain, painLocations[], symptoms[], mood, energy, sleep{…}, cravings[], weightKg, notes } }` |
 | `luniva_notifications` | `[{ id, type, message, date, read }]` |
+| `luniva_auth` | Supabase login session (managed by Supabase; not exported) |
 
 Dates are always local `YYYY-MM-DD` strings (never `toISOString()`), so days don't shift across time zones.
 
