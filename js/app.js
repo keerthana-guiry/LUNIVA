@@ -552,14 +552,26 @@ function getLogoSvg(size) {
 }
 
 /**
+ * Is someone signed in on this device? Supabase keeps the session
+ * (with a long-lived refresh token) under AUTH_STORAGE_KEY, and it must
+ * belong to the same person as the local profile.
+ */
+function hasAuthSession() {
+  const session = getData(AUTH_STORAGE_KEY);
+  const user = getUser();
+  if (!session || !session.refresh_token || !session.user) return false;
+  return !user || !user.id || user.id === session.user.id;
+}
+
+/**
  * Route guard for app pages:
- *   no user              → login.html
- *   onboarding not done  → onboarding.html
+ *   not signed in / no profile → login.html
+ *   onboarding not done        → onboarding.html
  * Returns true when the page may render.
  */
 function guardAppPage() {
   const user = getUser();
-  if (!user) {
+  if (!user || !hasAuthSession()) {
     window.location.replace("login.html");
     return false;
   }

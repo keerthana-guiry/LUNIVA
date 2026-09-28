@@ -1,20 +1,98 @@
 /* =========================================================
    Luniva — auth.js
-   Account screens: sign up, log in, log out, onboarding and
-   Settings (profile, preferences, export and delete data).
-   Requires storage.js and app.js.
+   Account screens: sign up (with email verification), log in
+   (password, emailed login code, or Google), password reset,
+   log out, onboarding, and Settings.
+   Requires storage.js, app.js, config.js and the Supabase
+   library (loaded from the CDN on the account pages).
 
-   Demo note: this is a single-user, browser-only prototype.
-   Passwords are validated on the sign-up form but NEVER stored,
-   and the login form only checks the email address.
+   Supabase Auth sends the emails, checks the 6-digit codes and
+   stores passwords securely on its servers. Passwords are never
+   saved in this browser. Health data still lives only on this
+   device (luniva_* keys).
    ========================================================= */
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD_LENGTH = 8;
+const OTP_PATTERN = /^\d{6}$/;
+const RESEND_WAIT_SECONDS = 60;
 
 /* ---------------------------------------------------------
-   FORM HELPERS
-   (setFieldError / clearFieldError live in app.js)
+   SUPABASE CLIENT
+   --------------------------------------------------------- */
+
+let authClient = null;
+
+/** True when config.js has real Supabase details and the library loaded. */
+function isAuthConfigured() {
+  return typeof LUNIVA_CONFIG !== "undefined" &&
+    !!LUNIVA_CONFIG.supabaseUrl && !!LUNIVA_CONFIG.supabaseAnonKey &&
+    !!window.supabase && typeof window.supabase.createClient === "function";
+}
+
+/** The shared Supabase client, or null when accounts aren't set up yet. */
+function getAuthClient() {
+  if (authClient) return authClient;
+  if (!isAuthConfigured()) return null;
+  authClient = window.supabase.createClient(LUNIVA_CONFIG.supabaseUrl, LUNIVA_CONFIG.supabaseAnonKey, {
+    auth: {
+      storageKey: AUTH_STORAGE_KEY,   // keep the session under a luniva_ key
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,       // picks up the session after Google sign-in
+      flowType: "implicit"
+    }
+  });
+  return authClient;
+}
+
+/** Absolute URL of a page in this site (used for Google's redirect). */
+function pageUrl(fileName) {
+  const url = new URL(fileName, window.location.href);
+  url.search = "";
+  url.hash = "";
+  return url.href;
+}
+
+/** Turn Supabase errors into calm, useful sentences. */
+function friendlyAuthError(error) {
+  const code = (error && error.code) || "";
+  const message = (error && error.message) || "";
+  const lower = message.toLowerCase();
+
+  if (code === "invalid_credentials" || lower.indexOf("invalid login credentials") !== -1) {
+    return "That email and password don't match. Try again, or use an emailed login code.";
+  }
+  if (code === "email_not_confirmed" || lower.indexOf("email not confirmed") !== -1) {
+    return "Please verify your email first — we can send you a new code.";
+  }
+  if (code === "otp_expired" || lower.indexOf("expired") !== -1 || (lower.indexOf("invalid") !== -1 && lower.indexOf("token") !== -1)) {
+    return "That code is wrong or has expired. Check your newest email, or send a new code.";
+  }
+  if (code === "otp_disabled" || code === "signup_disabled" || lower.indexOf("signups not allowed") !== -1) {
+    return "No Luniva account uses that email yet.";
+  }
+  if (code.indexOf("rate_limit") !== -1 || lower.indexOf("rate limit") !== -1 || lower.indexOf("security purposes") !== -1) {
+    return "Too many emails were requested. Please wait a minute and try again.";
+  }
+  if (code === "user_already_exists" || lower.indexOf("already registered") !== -1) {
+    return "An account with this email already exists. Please log in instead.";
+  }
+  if (code === "weak_password" || lower.indexOf("password should") !== -1) {
+    return "Please choose a stronger password (at least " + MIN_PASSWORD_LENGTH + " characters, mixing letters and numbers).";
+  }
+  if (code === "same_password") {
+    return "Your new password must be different from the old one.";
+  }
+  if (lower.indexOf("failed to fetch") !== -1 || lower.indexOf("network") !== -1) {
+    return "We can't reach Luniva right now. Please check your internet connection.";
+  }
+  return message ? "Something went wrong: " + message : "Something went wrong. Please try again.";
+}
+
+/* ---------------------------------------------------------
+   SHARED FORM HELPERS
+   (setFieldError / clearFieldError / showFormAlert live in app.js)
    --------------------------------------------------------- */
 
 /** Wire every "show password" eye button on the page. */
@@ -31,6 +109,311 @@ function setupPasswordToggles() {
   });
 }
 
+/** Disable a button and show a spinner while a request is running. */
+function setBusy(button, isBusy, busyText) {
+  if (isBusy) {
+    button.setAttribute("data-label", button.innerHTML);
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + escapeHtml(busyText || "Please wait…");
+  } else {
+    button.disabled = false;
+    if (button.hasAttribute("data-label")) button.innerHTML = button.getAttribute("data-label");
+  }
+}
+
+/** Check an email input; shows the error and returns false if invalid. */
+function validateEmailInput(input) {
+  clearFieldError(input);
+  const email = input.value.trim();
+  if (!email) {
+    setFieldError(input, "Please enter your email address.");
+  } else if (!EMAIL_PATTERN.test(email)) {
+    setFieldError(input, "Please enter a valid email, like name@example.com.");
+  } else {
+    return true;
+  }
+  input.focus();
+  return false;
+}
+
+/** Check a "new password + confirm" pair. */
+function validateNewPassword(passwordInput, confirmInput) {
+  [passwordInput, confirmInput].forEach(clearFieldError);
+  const password = passwordInput.value;
+  let firstInvalid = null;
+  if (!password) {
+    setFieldError(passwordInput, "Please create a password.");
+    firstInvalid = passwordInput;
+  } else if (password.length < MIN_PASSWORD_LENGTH) {
+    setFieldError(passwordInput, "Your password needs at least " + MIN_PASSWORD_LENGTH + " characters.");
+    firstInvalid = passwordInput;
+  }
+  if (!confirmInput.value) {
+    setFieldError(confirmInput, "Please confirm your password.");
+    firstInvalid = firstInvalid || confirmInput;
+  } else if (password && confirmInput.value !== password) {
+    setFieldError(confirmInput, "Passwords don't match yet.");
+    firstInvalid = firstInvalid || confirmInput;
+  }
+  if (firstInvalid) firstInvalid.focus();
+  return !firstInvalid;
+}
+
+/** Show exactly one panel inside the auth card (form, code, switch…). */
+function showAuthPanel(panelId) {
+  document.querySelectorAll(".auth-panel").forEach(function (panel) {
+    panel.hidden = panel.id !== panelId;
+  });
+  const heading = document.querySelector("#" + panelId + " h1");
+  if (heading) heading.focus();
+}
+
+/** If accounts aren't configured, explain and disable the forms. */
+function guardAuthConfigured(alertElement) {
+  if (getAuthClient()) return true;
+  showFormAlert(alertElement,
+    "Luniva accounts aren't connected yet. Add your Supabase project details to <code>js/config.js</code> to turn on sign-up and login.");
+  document.querySelectorAll(".auth-card button, .auth-card input").forEach(function (element) {
+    element.disabled = true;
+  });
+  return false;
+}
+
+/** Start Google sign-in. Google sends the user back to login.html. */
+function startGoogleSignIn(button, alertElement) {
+  const client = getAuthClient();
+  if (!client) return;
+  setBusy(button, true, "Opening Google…");
+  client.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: pageUrl("login.html") }
+  }).then(function (result) {
+    if (result.error) {
+      setBusy(button, false);
+      showFormAlert(alertElement, escapeHtml(friendlyAuthError(result.error)));
+    }
+    // On success the browser leaves this page for Google.
+  });
+}
+
+/* ---------------------------------------------------------
+   AFTER SIGN-IN: CONNECT THE ACCOUNT TO THIS DEVICE
+   --------------------------------------------------------- */
+
+/** Does this device already hold data for a DIFFERENT account? */
+function isDifferentAccount(authUser) {
+  const existing = getUser();
+  if (!existing) return false;
+  if (existing.id) return existing.id !== authUser.id;
+  return String(existing.email || "").toLowerCase() !== String(authUser.email || "").toLowerCase();
+}
+
+/**
+ * Create or update the local profile (luniva_user) for the signed-in
+ * account. Data from the same account is kept.
+ */
+function saveProfileFromAuthUser(authUser) {
+  const existing = getUser();
+  const meta = authUser.user_metadata || {};
+  const base = existing && !isDifferentAccount(authUser) ? existing : {};
+  const profile = {
+    id: authUser.id,
+    name: base.name || meta.name || meta.full_name || String(authUser.email).split("@")[0],
+    email: authUser.email,
+    heightCm: typeof base.heightCm === "number" ? base.heightCm : null,
+    createdAt: base.createdAt || todayString(),
+    onboardingComplete: base.onboardingComplete === true
+  };
+  saveData(STORAGE_KEYS.user, profile);
+  return profile;
+}
+
+function goToApp(profile) {
+  window.location.href = profile.onboardingComplete ? "dashboard.html" : "onboarding.html";
+}
+
+/**
+ * Finish signing in. If this device holds another account's data,
+ * ask before replacing it (health data only lives on this device).
+ */
+function finishSignIn(authUser) {
+  if (!isDifferentAccount(authUser)) {
+    goToApp(saveProfileFromAuthUser(authUser));
+    return;
+  }
+
+  const oldUser = getUser();
+  document.getElementById("switch-old-email").textContent = oldUser.email || "another account";
+  document.getElementById("switch-new-email").textContent = authUser.email;
+  showAuthPanel("switch-panel");
+
+  document.getElementById("switch-confirm").onclick = function () {
+    clearUserData();
+    goToApp(saveProfileFromAuthUser(authUser));
+  };
+  document.getElementById("switch-cancel").onclick = function () {
+    getAuthClient().auth.signOut().finally(function () {
+      deleteData(AUTH_STORAGE_KEY);
+      window.location.replace("login.html");
+    });
+  };
+}
+
+/* ---------------------------------------------------------
+   6-DIGIT EMAIL CODE STEP
+   Used for: verifying a new account ("signup"), logging in
+   with a code ("email"), and resetting a password ("recovery").
+   --------------------------------------------------------- */
+
+const OTP_TEXT = {
+  signup: {
+    title: "Verify your email",
+    intro: "We sent a 6-digit code to",
+    button: "Verify & continue"
+  },
+  email: {
+    title: "Enter your login code",
+    intro: "We sent a 6-digit login code to",
+    button: "Log in"
+  },
+  recovery: {
+    title: "Reset your password",
+    intro: "We sent a 6-digit reset code to",
+    button: "Save new password"
+  }
+};
+
+let otpState = { email: "", type: "signup", timer: null };
+
+/** Ask Supabase to email a fresh code of the current type. */
+function requestCode(email, type) {
+  const auth = getAuthClient().auth;
+  if (type === "signup") return auth.resend({ type: "signup", email: email });
+  if (type === "recovery") return auth.resetPasswordForEmail(email, { redirectTo: pageUrl("login.html") });
+  return auth.signInWithOtp({ email: email, options: { shouldCreateUser: false } });
+}
+
+/** Count down before "Resend code" can be used again. */
+function startResendTimer() {
+  const resendButton = document.getElementById("otp-resend");
+  const timerText = document.getElementById("otp-timer");
+  let secondsLeft = RESEND_WAIT_SECONDS;
+  clearInterval(otpState.timer);
+  resendButton.disabled = true;
+  timerText.textContent = "You can resend in " + secondsLeft + "s";
+  otpState.timer = setInterval(function () {
+    secondsLeft--;
+    if (secondsLeft <= 0) {
+      clearInterval(otpState.timer);
+      resendButton.disabled = false;
+      timerText.textContent = "Didn't get it? Check spam, or resend.";
+    } else {
+      timerText.textContent = "You can resend in " + secondsLeft + "s";
+    }
+  }, 1000);
+}
+
+/** Switch the card to the code step for `email`. */
+function showOtpStep(email, type) {
+  otpState.email = email;
+  otpState.type = type;
+  const text = OTP_TEXT[type];
+
+  document.getElementById("otp-title").textContent = text.title;
+  document.getElementById("otp-intro").textContent = text.intro;
+  document.getElementById("otp-email").textContent = email;
+  document.getElementById("otp-submit").innerHTML = escapeHtml(text.button) + ' <i class="bi bi-arrow-right" aria-hidden="true"></i>';
+  document.getElementById("otp-new-password").hidden = type !== "recovery";
+  document.getElementById("otp-code").value = "";
+  hideFormAlert(document.getElementById("otp-alert"));
+  ["otp-code", "otp-password", "otp-confirm"].forEach(function (id) { clearFieldError(document.getElementById(id)); });
+
+  showAuthPanel("otp-panel");
+  startResendTimer();
+  document.getElementById("otp-code").focus();
+}
+
+/** Wire the code form once per page. */
+function setupOtpStep(backPanelId) {
+  const form = document.getElementById("otp-form");
+  const codeInput = document.getElementById("otp-code");
+  const alertBox = document.getElementById("otp-alert");
+  const submitButton = document.getElementById("otp-submit");
+
+  // Keep only digits, max 6.
+  codeInput.addEventListener("input", function () {
+    codeInput.value = codeInput.value.replace(/\D/g, "").slice(0, 6);
+    clearFieldError(codeInput);
+  });
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    hideFormAlert(alertBox);
+    const code = codeInput.value.trim();
+    clearFieldError(codeInput);
+    if (!OTP_PATTERN.test(code)) {
+      setFieldError(codeInput, "Enter the 6-digit code from your email.");
+      codeInput.focus();
+      return;
+    }
+
+    const isRecovery = otpState.type === "recovery";
+    const passwordInput = document.getElementById("otp-password");
+    const confirmInput = document.getElementById("otp-confirm");
+    if (isRecovery && !validateNewPassword(passwordInput, confirmInput)) return;
+
+    setBusy(submitButton, true, "Checking…");
+    const auth = getAuthClient().auth;
+    auth.verifyOtp({ email: otpState.email, token: code, type: otpState.type })
+      .then(function (result) {
+        if (result.error) throw result.error;
+        if (!isRecovery) return result.data.user;
+        // A recovery code signs the user in; now save the new password.
+        return auth.updateUser({ password: passwordInput.value }).then(function (update) {
+          if (update.error) throw update.error;
+          showToast("Your password has been updated 🌷", "success");
+          return update.data.user || result.data.user;
+        });
+      })
+      .then(function (user) {
+        clearInterval(otpState.timer);
+        finishSignIn(user);
+      })
+      .catch(function (error) {
+        setBusy(submitButton, false);
+        showFormAlert(alertBox, escapeHtml(friendlyAuthError(error)));
+      });
+  });
+
+  document.getElementById("otp-resend").addEventListener("click", function () {
+    const button = document.getElementById("otp-resend");
+    hideFormAlert(alertBox);
+    button.disabled = true;
+    requestCode(otpState.email, otpState.type).then(function (result) {
+      if (result.error) {
+        button.disabled = false;
+        showFormAlert(alertBox, escapeHtml(friendlyAuthError(result.error)));
+        return;
+      }
+      showToast("A new code is on its way to " + otpState.email + ".", "info");
+      startResendTimer();
+    }).catch(function (error) {
+      button.disabled = false;
+      showFormAlert(alertBox, escapeHtml(friendlyAuthError(error)));
+    });
+  });
+
+  document.getElementById("otp-back").addEventListener("click", function () {
+    clearInterval(otpState.timer);
+    showAuthPanel(backPanelId);
+  });
+
+  ["otp-password", "otp-confirm"].forEach(function (id) {
+    const input = document.getElementById(id);
+    input.addEventListener("input", function () { clearFieldError(input); });
+  });
+}
+
 /* ---------------------------------------------------------
    SIGN UP
    --------------------------------------------------------- */
@@ -42,70 +425,80 @@ function initSignupPage() {
   const passwordInput = document.getElementById("signup-password");
   const confirmInput = document.getElementById("signup-confirm");
   const agreeInput = document.getElementById("signup-agree");
-  const existingNotice = document.getElementById("existing-profile-notice");
+  const formAlert = document.getElementById("signup-alert");
+  const submitButton = form.querySelector('button[type="submit"]');
 
   setupPasswordToggles();
   clearErrorOnInput([nameInput, emailInput, passwordInput, confirmInput, agreeInput]);
+  if (!guardAuthConfigured(formAlert)) return;
+  setupOtpStep("signup-panel");
 
-  // If a profile already lives on this device, say so before it is replaced.
-  const existingUser = getUser();
-  if (existingUser && existingUser.email) {
-    existingNotice.innerHTML =
-      '<i class="bi bi-info-circle" aria-hidden="true"></i><span>A Luniva profile for <strong>' +
-      escapeHtml(existingUser.email) + '</strong> already exists on this device. ' +
-      'Creating a new one will replace it and its data. <a href="login.html">Log in instead</a>.</span>';
-    existingNotice.classList.add("is-visible");
-  }
+  // Already signed in? Go straight to the app.
+  getAuthClient().auth.getSession().then(function (result) {
+    if (result.data && result.data.session) finishSignIn(result.data.session.user);
+  });
+
+  document.getElementById("google-button").addEventListener("click", function () {
+    if (!agreeInput.checked) {
+      setFieldError(agreeInput, "Please confirm you understand this before continuing.");
+      agreeInput.focus();
+      return;
+    }
+    startGoogleSignIn(document.getElementById("google-button"), formAlert);
+  });
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
+    hideFormAlert(formAlert);
+    [nameInput, agreeInput].forEach(clearFieldError);
 
     const name = nameInput.value.trim();
+    let valid = true;
+    if (!name) {
+      setFieldError(nameInput, "Please enter your name.");
+      nameInput.focus();
+      valid = false;
+    }
+    if (valid && !validateEmailInput(emailInput)) valid = false;
+    if (valid && !validateNewPassword(passwordInput, confirmInput)) valid = false;
+    if (valid && !agreeInput.checked) {
+      setFieldError(agreeInput, "Please confirm you understand this before continuing.");
+      agreeInput.focus();
+      valid = false;
+    }
+    if (!valid) return;
+
     const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    const confirmPassword = confirmInput.value;
-    let firstInvalid = null;
+    setBusy(submitButton, true, "Creating your Luniva…");
 
-    function fail(input, message) {
-      setFieldError(input, message);
-      if (!firstInvalid) firstInvalid = input;
-    }
-
-    [nameInput, emailInput, passwordInput, confirmInput, agreeInput].forEach(clearFieldError);
-
-    if (!name) fail(nameInput, "Please enter your name.");
-
-    if (!email) fail(emailInput, "Please enter your email address.");
-    else if (!EMAIL_PATTERN.test(email)) fail(emailInput, "Please enter a valid email, like name@example.com.");
-
-    if (!password) fail(passwordInput, "Please create a password.");
-    else if (password.length < MIN_PASSWORD_LENGTH) {
-      fail(passwordInput, "Your password needs at least " + MIN_PASSWORD_LENGTH + " characters.");
-    }
-
-    if (!confirmPassword) fail(confirmInput, "Please confirm your password.");
-    else if (password && confirmPassword !== password) fail(confirmInput, "Passwords don't match yet.");
-
-    if (!agreeInput.checked) fail(agreeInput, "Please confirm you understand this before continuing.");
-
-    if (firstInvalid) {
-      firstInvalid.focus();
-      return;
-    }
-
-    // A new profile replaces any older one (single-user demo).
-    if (existingUser) clearAllData();
-
-    // Note: the password is intentionally NOT saved.
-    saveData(STORAGE_KEYS.user, {
-      name: name,
+    // Supabase stores the password securely and emails a 6-digit code.
+    getAuthClient().auth.signUp({
       email: email,
-      heightCm: null,
-      createdAt: todayString(),
-      onboardingComplete: false
+      password: passwordInput.value,
+      options: { data: { name: name }, emailRedirectTo: pageUrl("login.html") }
+    }).then(function (result) {
+      setBusy(submitButton, false);
+      if (result.error) {
+        showFormAlert(formAlert, escapeHtml(friendlyAuthError(result.error)));
+        return;
+      }
+      const user = result.data.user;
+      // Supabase hides whether an email is taken: an existing, verified
+      // address comes back with no identities.
+      if (user && Array.isArray(user.identities) && user.identities.length === 0) {
+        showFormAlert(formAlert, 'An account with this email already exists. <a href="login.html">Log in instead</a>.');
+        return;
+      }
+      // If email confirmation is switched off in Supabase, we're already in.
+      if (result.data.session) {
+        finishSignIn(result.data.session.user);
+        return;
+      }
+      showOtpStep(email, "signup");
+    }).catch(function (error) {
+      setBusy(submitButton, false);
+      showFormAlert(formAlert, escapeHtml(friendlyAuthError(error)));
     });
-
-    window.location.href = "onboarding.html";
   });
 }
 
@@ -118,71 +511,129 @@ function initLoginPage() {
   const emailInput = document.getElementById("login-email");
   const passwordInput = document.getElementById("login-password");
   const formAlert = document.getElementById("login-alert");
-  const forgotLink = document.getElementById("forgot-password");
+  const submitButton = form.querySelector('button[type="submit"]');
+  const codeButton = document.getElementById("login-code-button");
 
   setupPasswordToggles();
   clearErrorOnInput([emailInput, passwordInput]);
   emailInput.addEventListener("input", function () { hideFormAlert(formAlert); });
+  if (!guardAuthConfigured(formAlert)) return;
+  setupOtpStep("login-panel");
 
-  // Arriving from "Log out" (login.html?logout=1).
+  const client = getAuthClient();
   const params = new URLSearchParams(window.location.search);
-  if (params.get("logout") === "1") {
-    logoutUser();
+
+  // Errors sent back by Google / Supabase in the URL (e.g. #error_description=…).
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const urlError = hashParams.get("error_description") || params.get("error_description");
+  if (urlError) {
+    showFormAlert(formAlert, escapeHtml(friendlyAuthError({ message: urlError })));
     window.history.replaceState(null, "", "login.html");
   }
 
-  forgotLink.addEventListener("click", function (event) {
-    event.preventDefault();
-    showToast("Password reset will arrive with Luniva accounts. In this demo, only your email is checked.", "info");
+  // Arriving from "Log out" (login.html?logout=1): end the session first.
+  const ready = params.get("logout") === "1"
+    ? logoutUser().then(function () { window.history.replaceState(null, "", "login.html"); })
+    : Promise.resolve();
+
+  // Already signed in (or just back from Google)? Continue to the app.
+  ready.then(function () { return client.auth.getSession(); }).then(function (result) {
+    if (result && result.data && result.data.session) finishSignIn(result.data.session.user);
   });
 
+  document.getElementById("google-button").addEventListener("click", function () {
+    startGoogleSignIn(document.getElementById("google-button"), formAlert);
+  });
+
+  // Log in with email + password.
   form.addEventListener("submit", function (event) {
     event.preventDefault();
     hideFormAlert(formAlert);
-    clearFieldError(emailInput);
     clearFieldError(passwordInput);
+    if (!validateEmailInput(emailInput)) return;
+    if (!passwordInput.value) {
+      setFieldError(passwordInput, "Please enter your password.");
+      passwordInput.focus();
+      return;
+    }
 
     const email = emailInput.value.trim();
-    const password = passwordInput.value;
-    let firstInvalid = null;
+    setBusy(submitButton, true, "Logging in…");
+    client.auth.signInWithPassword({ email: email, password: passwordInput.value }).then(function (result) {
+      if (!result.error) {
+        finishSignIn(result.data.user);
+        return;
+      }
+      setBusy(submitButton, false);
+      const notVerified = result.error.code === "email_not_confirmed" ||
+        String(result.error.message).toLowerCase().indexOf("email not confirmed") !== -1;
+      if (notVerified) {
+        // Send a fresh verification code and ask for it.
+        requestCode(email, "signup").then(function () { showOtpStep(email, "signup"); });
+        return;
+      }
+      showFormAlert(formAlert, escapeHtml(friendlyAuthError(result.error)));
+    }).catch(function (error) {
+      setBusy(submitButton, false);
+      showFormAlert(formAlert, escapeHtml(friendlyAuthError(error)));
+    });
+  });
 
-    if (!email) {
-      setFieldError(emailInput, "Please enter your email address.");
-      firstInvalid = emailInput;
-    } else if (!EMAIL_PATTERN.test(email)) {
-      setFieldError(emailInput, "Please enter a valid email, like name@example.com.");
-      firstInvalid = emailInput;
-    }
-    if (!password) {
-      setFieldError(passwordInput, "Please enter your password.");
-      firstInvalid = firstInvalid || passwordInput;
-    }
-    if (firstInvalid) {
-      firstInvalid.focus();
+  // Log in with a 6-digit code instead of a password.
+  codeButton.addEventListener("click", function () {
+    hideFormAlert(formAlert);
+    if (!validateEmailInput(emailInput)) return;
+    const email = emailInput.value.trim();
+    setBusy(codeButton, true, "Sending code…");
+    requestCode(email, "email").then(function (result) {
+      setBusy(codeButton, false);
+      if (result.error) {
+        let message = escapeHtml(friendlyAuthError(result.error));
+        if (message.indexOf("No Luniva account") === 0) message += ' <a href="signup.html">Create one</a>.';
+        showFormAlert(formAlert, message);
+        return;
+      }
+      showOtpStep(email, "email");
+    }).catch(function (error) {
+      setBusy(codeButton, false);
+      showFormAlert(formAlert, escapeHtml(friendlyAuthError(error)));
+    });
+  });
+
+  // Forgot password: email a reset code, then set a new password.
+  document.getElementById("forgot-password").addEventListener("click", function (event) {
+    event.preventDefault();
+    hideFormAlert(formAlert);
+    if (!validateEmailInput(emailInput)) {
+      showToast("Enter your email first, then tap “Forgot password?”.", "info");
       return;
     }
-
-    const user = getUser();
-    if (!user) {
-      showFormAlert(formAlert, 'No Luniva profile was found on this device. <a href="signup.html">Create one</a> to get started.');
-      return;
-    }
-    if (String(user.email).toLowerCase() !== email.toLowerCase()) {
-      showFormAlert(formAlert, "That email doesn't match the Luniva profile on this device.");
-      emailInput.focus();
-      return;
-    }
-
-    window.location.href = user.onboardingComplete ? "dashboard.html" : "onboarding.html";
+    const email = emailInput.value.trim();
+    requestCode(email, "recovery").then(function (result) {
+      if (result.error) {
+        showFormAlert(formAlert, escapeHtml(friendlyAuthError(result.error)));
+        return;
+      }
+      showOtpStep(email, "recovery");
+    }).catch(function (error) {
+      showFormAlert(formAlert, escapeHtml(friendlyAuthError(error)));
+    });
   });
 }
 
 /**
- * Log out. With no server session to end, this simply returns the
- * user to the login screen; their data stays on this device.
+ * Log out: end the Supabase session. Health data stays on this
+ * device so the same person can log back in and continue.
  */
 function logoutUser() {
-  showToast("You've logged out. Your data stays private on this device.", "info");
+  const client = getAuthClient();
+  const signOut = client ? client.auth.signOut() : Promise.resolve();
+  return signOut
+    .catch(function () { /* offline: still clear the local session below */ })
+    .then(function () {
+      deleteData(AUTH_STORAGE_KEY);
+      showToast("You've logged out. Your data stays private on this device.", "info");
+    });
 }
 
 /* ---------------------------------------------------------
@@ -193,8 +644,8 @@ const ONBOARDING_TOTAL_STEPS = 4;
 
 function initOnboardingPage() {
   const user = getUser();
-  if (!user) {
-    window.location.replace("signup.html");
+  if (!user || !hasAuthSession()) {
+    window.location.replace("login.html");
     return;
   }
   if (user.onboardingComplete) {
@@ -419,7 +870,7 @@ function fillSettingsForms() {
   const settings = getSettings();
 
   document.getElementById("profile-name").value = user.name || "";
-  document.getElementById("profile-email").value = user.email || "";
+  document.getElementById("profile-email").value = user.email || "";   // read-only: it's the login
   document.getElementById("profile-height").value = typeof user.heightCm === "number" ? user.heightCm : "";
 
   document.getElementById("settings-cycle-length").value = settings.cycleLength;
@@ -448,22 +899,16 @@ function fillSettingsForms() {
 
 function saveProfileForm() {
   const nameInput = document.getElementById("profile-name");
-  const emailInput = document.getElementById("profile-email");
   const heightInput = document.getElementById("profile-height");
-  [nameInput, emailInput, heightInput].forEach(clearFieldError);
+  [nameInput, heightInput].forEach(clearFieldError);
 
   const name = nameInput.value.trim();
-  const email = emailInput.value.trim();
   const heightText = heightInput.value.trim();
   let firstInvalid = null;
 
   if (!name) {
     setFieldError(nameInput, "Please enter your name.");
     firstInvalid = nameInput;
-  }
-  if (!EMAIL_PATTERN.test(email)) {
-    setFieldError(emailInput, "Please enter a valid email, like name@example.com.");
-    firstInvalid = firstInvalid || emailInput;
   }
   let heightCm = null;
   if (heightText !== "") {
@@ -480,9 +925,40 @@ function saveProfileForm() {
     return;
   }
 
-  updateData(STORAGE_KEYS.user, { name: name, email: email, heightCm: heightCm });
+  // The email is the login and is managed by Supabase, so only these change.
+  updateData(STORAGE_KEYS.user, { name: name, heightCm: heightCm });
   renderAppNav();   // the avatar initial and name may have changed
   showToast("Profile saved.", "success");
+}
+
+/** Change the account password (the user is already signed in). */
+function savePasswordForm() {
+  const passwordInput = document.getElementById("new-password");
+  const confirmInput = document.getElementById("new-password-confirm");
+  const button = document.querySelector('#password-form button[type="submit"]');
+  const alertBox = document.getElementById("password-alert");
+  hideFormAlert(alertBox);
+  if (!validateNewPassword(passwordInput, confirmInput)) return;
+
+  const client = getAuthClient();
+  if (!client) {
+    showFormAlert(alertBox, "Accounts aren't connected yet (see js/config.js).");
+    return;
+  }
+  setBusy(button, true, "Saving…");
+  client.auth.updateUser({ password: passwordInput.value }).then(function (result) {
+    setBusy(button, false);
+    if (result.error) {
+      showFormAlert(alertBox, escapeHtml(friendlyAuthError(result.error)));
+      return;
+    }
+    passwordInput.value = "";
+    confirmInput.value = "";
+    showToast("Your password has been changed.", "success");
+  }).catch(function (error) {
+    setBusy(button, false);
+    showFormAlert(alertBox, escapeHtml(friendlyAuthError(error)));
+  });
 }
 
 function saveCycleForm() {
@@ -546,10 +1022,16 @@ function initSettingsPage() {
     event.preventDefault();
     saveCycleForm();
   });
+  document.getElementById("password-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    savePasswordForm();
+  });
+  setupPasswordToggles();
   clearErrorOnInput([
     document.getElementById("profile-name"),
-    document.getElementById("profile-email"),
     document.getElementById("profile-height"),
+    document.getElementById("new-password"),
+    document.getElementById("new-password-confirm"),
     document.getElementById("settings-cycle-length"),
     document.getElementById("settings-period-length")
   ]);
@@ -578,8 +1060,15 @@ function initSettingsPage() {
 
   document.getElementById("export-data").addEventListener("click", exportAllData);
   document.getElementById("confirm-delete-data").addEventListener("click", function () {
-    clearAllData();
-    window.location.href = "index.html";
+    const button = document.getElementById("confirm-delete-data");
+    setBusy(button, true, "Deleting…");
+    // Sign out of the account, then remove every luniva_* key (incl. the session).
+    const client = getAuthClient();
+    const signOut = client ? client.auth.signOut().catch(function () {}) : Promise.resolve();
+    signOut.then(function () {
+      clearAllData();
+      window.location.href = "index.html";
+    });
   });
 }
 

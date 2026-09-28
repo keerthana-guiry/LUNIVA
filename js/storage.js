@@ -17,6 +17,11 @@ const STORAGE_KEYS = {
 
 const STORAGE_PREFIX = "luniva_";
 
+// The login session saved by Supabase Auth (see config.js / auth.js).
+// It shares the luniva_ prefix so clearAllData() also logs the user out,
+// but it is never included in data exports.
+const AUTH_STORAGE_KEY = "luniva_auth";
+
 /**
  * Read a key and return the parsed value, or null if it is missing
  * or the stored JSON is corrupted (so a bad value never crashes a page).
@@ -78,6 +83,13 @@ function clearAllData() {
   } catch (error) {
     console.error("Luniva: could not clear data", error);
   }
+}
+
+/** Remove the user's Luniva data but keep the login session. */
+function clearUserData() {
+  Object.keys(STORAGE_KEYS).forEach(function (name) {
+    deleteData(STORAGE_KEYS[name]);
+  });
 }
 
 /** Collect all luniva_* data into one object (used by Export Data). */
