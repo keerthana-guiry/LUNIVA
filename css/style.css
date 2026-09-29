@@ -798,6 +798,51 @@ button.chip-button[aria-pressed="true"] {
 .section-white {
   background: var(--lv-white);
 }
+.hero-about {
+  color: var(--lv-muted);
+  max-width: 34rem;
+  margin: -0.25rem 0 0;
+}
+.about-section h2 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  margin-bottom: 1rem;
+}
+.about-lead {
+  font-size: 1.1rem;
+  color: var(--lv-ink-soft);
+}
+.about-card {
+  padding: 1.75rem;
+  border-radius: var(--lv-radius-lg);
+  background: linear-gradient(145deg, var(--lv-lavender-50), var(--lv-rose-50));
+  border: 1px solid var(--lv-border);
+}
+.about-card h3 {
+  font-family: var(--lv-font-body);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+.about-card p {
+  color: var(--lv-ink-soft);
+  font-size: 0.95rem;
+}
+.about-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.about-list li {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  padding: 0.35rem 0;
+  color: var(--lv-ink-soft);
+}
+.about-list i {
+  color: var(--lv-rose-600);
+  margin-top: 0.15rem;
+}
 .section-heading {
   max-width: 40rem;
   margin: 0 auto 3rem;
@@ -1741,16 +1786,16 @@ button.chip-button[aria-pressed="true"] {
   to { opacity: 0; transform: translateY(8px); }
 }
 
-/* Reveal-on-scroll (landing page). Only hidden once app.js is running,
-   so content is never lost if JavaScript fails to load. */
-.reveal-ready .reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.6s var(--lv-ease), transform 0.6s var(--lv-ease);
+/* Reveal-on-scroll (landing page). Content is ALWAYS visible — people,
+   search engines and Google's app-verification checker all see every
+   section without scrolling. Sections only get a gentle rise as they
+   come into view. */
+@keyframes gentle-rise {
+  from { transform: translateY(14px); }
+  to { transform: translateY(0); }
 }
 .reveal-ready .reveal.is-visible {
-  opacity: 1;
-  transform: none;
+  animation: gentle-rise 0.6s var(--lv-ease) both;
 }
 
 /* Respect people who prefer less motion */
@@ -1765,9 +1810,8 @@ button.chip-button[aria-pressed="true"] {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  .reveal-ready .reveal {
-    opacity: 1;
-    transform: none;
+  .reveal-ready .reveal.is-visible {
+    animation: none;
   }
 }
 
