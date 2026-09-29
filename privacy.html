@@ -7,7 +7,12 @@
   <meta name="description" content="How Luniva handles your information: health records stay on your device, and only sign-in details are kept by our login service.">
   <meta name="theme-color" content="#fbf7f2">
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/images/logo-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Luniva">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/style.css">
@@ -32,14 +37,14 @@
     <header class="legal-title">
       <span class="eyebrow"><i class="bi bi-shield-lock" aria-hidden="true"></i> Privacy Policy</span>
       <h1>Your health data belongs to you.</h1>
-      <p class="legal-updated">Last updated: 29 September 2026</p>
+      <p class="legal-updated">Last updated: 29 September 2026 (encrypted sync added)</p>
     </header>
 
     <section class="legal-summary" aria-labelledby="summary-title">
       <h2 id="summary-title">The short version</h2>
       <ul>
-        <li><strong>Your health records stay on your device.</strong> Periods, flow, pain, mood, sleep, cravings, symptoms, weight and notes are saved in your browser and are never sent to us.</li>
-        <li><strong>Only your sign-in details leave your device:</strong> your name, email address and a securely protected password, so you can log in.</li>
+        <li><strong>Your health records stay on your device</strong> — unless you choose to turn on encrypted sync. Then they're encrypted on your device with a passphrase only you know before being saved to your account, so nobody else (including us) can read them.</li>
+        <li><strong>Your sign-in details</strong> — name, email address and a securely protected password — are kept by our login service so you can log in.</li>
         <li><strong>No ads, no tracking, no selling.</strong> We don't use advertising or analytics cookies, and we never sell or share your information for marketing.</li>
         <li><strong>You're in control.</strong> Export or delete your data from Settings at any time.</li>
       </ul>
@@ -84,13 +89,16 @@
 
     <section id="device" class="legal-section">
       <h2>3. What stays on your device</h2>
-      <p>Everything you track in Luniva is stored <strong>only in your browser's storage on the device you use</strong>, and is <strong>not sent to us or to anyone else</strong>. This includes:</p>
+      <p>Everything you track in Luniva is stored <strong>in your browser's storage on the device you use</strong>. Unless you turn on encrypted sync (below), it is <strong>not sent to us or to anyone else</strong>. This includes:</p>
       <ul>
         <li>Period dates and cycle settings</li>
         <li>Daily check-ins: flow, pain level and location, symptoms, mood, energy, sleep, cravings, optional weight and notes</li>
         <li>Your height (if you add it), reminder choices and in-app notifications</li>
       </ul>
-      <p>Because these records live on your device, <strong>clearing your browser data, using private browsing, or switching devices means they won't be there</strong>. Use <em>Settings → Export Data</em> to keep a copy. If a different account signs in on the same device, Luniva asks before removing the previous account's records from that device.</p>
+      <p>If sync is off, <strong>clearing your browser data, using private browsing, or switching devices means your records won't be there</strong>. Use <em>Settings → Export Data</em> to keep a copy, or turn on encrypted sync.</p>
+      <h3 class="h6 mt-4">Optional encrypted sync</h3>
+      <p>If you turn on <em>Settings → Encrypted sync &amp; backup</em>, you choose a sync passphrase. Your records are encrypted <strong>on your device</strong> with a key made from that passphrase (AES-256-GCM; key derived with PBKDF2-SHA-256) before anything is uploaded. Our database (Supabase) stores only the encrypted text, linked to your account. Your passphrase is never sent to us, so <strong>we cannot read, recover or reset your synced records</strong> — if you forget it, the synced copy can't be opened and can only be deleted. The device you sync from keeps its encryption key in the browser so you don't have to re-enter the passphrase on every page. You can turn sync off at any time and choose to delete the encrypted copy.</p>
+      <p>If a different account signs in on the same device, Luniva asks before removing the previous account's records from that device.</p>
     </section>
 
     <section id="use" class="legal-section">
@@ -112,7 +120,7 @@
             <tr><th scope="col">Provider</th><th scope="col">What it does</th><th scope="col">Information involved</th></tr>
           </thead>
           <tbody>
-            <tr><td>Supabase</td><td>Accounts and login</td><td>Name, email, protected password, login activity</td></tr>
+            <tr><td>Supabase</td><td>Accounts, login, and (only if you turn it on) storing your encrypted sync copy</td><td>Name, email, protected password, login activity, encrypted records it cannot read</td></tr>
             <tr><td>Brevo</td><td>Sends verification, login and reset codes</td><td>Email address and the email content</td></tr>
             <tr><td>Google</td><td>"Continue with Google" (only if you use it)</td><td>Name, email, profile picture (see section 6)</td></tr>
             <tr><td>Netlify</td><td>Hosts the website</td><td>Technical information such as IP address</td></tr>
@@ -120,7 +128,7 @@
           </tbody>
         </table>
       </div>
-      <p>Some of these providers may process information outside your country. None of them receive your health records.</p>
+      <p>Some of these providers may process information outside your country. None of them can read your health records.</p>
     </section>
 
     <section id="google" class="legal-section">
@@ -144,7 +152,7 @@
     <section id="retention" class="legal-section">
       <h2>8. How long we keep it</h2>
       <ul>
-        <li><strong>Health records</strong> stay on your device until you delete them (Settings → Delete Data) or clear your browser data.</li>
+        <li><strong>Health records</strong> stay on your device until you delete them (Settings → Delete Data) or clear your browser data. If you use encrypted sync, the encrypted copy is kept until you turn sync off with "delete my encrypted copy", use Delete Data, or delete your account.</li>
         <li><strong>Account details</strong> are kept while your account exists. If you ask us to delete your account, we remove it from our login service.</li>
       </ul>
     </section>
@@ -155,7 +163,7 @@
       <ul>
         <li><strong>Get a copy:</strong> Settings → Export Data downloads everything Luniva stores on your device.</li>
         <li><strong>Correct:</strong> change your name and details in Settings.</li>
-        <li><strong>Delete from this device:</strong> Settings → Delete Data removes all Luniva data from the device and logs you out.</li>
+        <li><strong>Delete from this device:</strong> Settings → Delete Data removes all Luniva data from the device, deletes your encrypted synced copy (if any) and logs you out.</li>
         <li><strong>Delete your account:</strong> email us from your account's email address and we'll delete it.</li>
         <li><strong>Questions or complaints:</strong> contact us (below). You can also contact your local data-protection authority.</li>
       </ul>

@@ -22,6 +22,16 @@ const STORAGE_PREFIX = "luniva_";
 // but it is never included in data exports.
 const AUTH_STORAGE_KEY = "luniva_auth";
 
+// Encrypted-sync settings for THIS device (see sync.js). Holds the
+// device's encryption key, so it is never exported.
+const SYNC_STORAGE_KEY = "luniva_sync";
+
+// Keys whose contents are included in encrypted sync.
+const SYNCED_KEYS = ["luniva_user", "luniva_settings", "luniva_periods", "luniva_dailyLogs", "luniva_notifications"];
+
+// Optional function called after a synced key is saved (set by sync.js).
+let onSyncedDataChange = null;
+
 /**
  * Read a key and return the parsed value, or null if it is missing
  * or the stored JSON is corrupted (so a bad value never crashes a page).
@@ -41,6 +51,7 @@ function getData(key) {
 function saveData(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    if (onSyncedDataChange && SYNCED_KEYS.indexOf(key) !== -1) onSyncedDataChange(key);
     return true;
   } catch (error) {
     console.error("Luniva: could not save '" + key + "'", error);
@@ -85,11 +96,12 @@ function clearAllData() {
   }
 }
 
-/** Remove the user's Luniva data but keep the login session. */
+/** Remove the user's Luniva data (and this device's sync set-up) but keep the login session. */
 function clearUserData() {
   Object.keys(STORAGE_KEYS).forEach(function (name) {
     deleteData(STORAGE_KEYS[name]);
   });
+  deleteData(SYNC_STORAGE_KEY);
 }
 
 /** Collect all luniva_* data into one object (used by Export Data). */

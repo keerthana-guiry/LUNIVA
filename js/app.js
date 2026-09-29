@@ -187,6 +187,18 @@ function hideFormAlert(alertElement) {
   alertElement.innerHTML = "";
 }
 
+/** Disable a button and show a spinner while a request is running. */
+function setBusy(button, isBusy, busyText) {
+  if (isBusy) {
+    button.setAttribute("data-label", button.innerHTML);
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + escapeHtml(busyText || "Please wait…");
+  } else {
+    button.disabled = false;
+    if (button.hasAttribute("data-label")) button.innerHTML = button.getAttribute("data-label");
+  }
+}
+
 /* ---------------------------------------------------------
    3. SETTINGS, USER, PERIODS AND DAILY LOGS
    --------------------------------------------------------- */
@@ -494,6 +506,37 @@ function getAverageSleep() {
     .filter(function (hours) { return typeof hours === "number" && !isNaN(hours) && hours > 0; });
   // Two decimals so formatHours() shows exact minutes (7.75 → "7 h 45 min").
   return values.length ? Math.round(average(values) * 100) / 100 : null;
+}
+
+/* ---------------------------------------------------------
+   SUPABASE CLIENT (accounts + encrypted sync)
+   Pages that use it load the Supabase library and config.js
+   before storage.js. On other pages getAuthClient() returns null.
+   --------------------------------------------------------- */
+
+let authClient = null;
+
+/** True when config.js has real Supabase details and the library loaded. */
+function isAuthConfigured() {
+  return typeof LUNIVA_CONFIG !== "undefined" &&
+    !!LUNIVA_CONFIG.supabaseUrl && !!LUNIVA_CONFIG.supabaseAnonKey &&
+    !!window.supabase && typeof window.supabase.createClient === "function";
+}
+
+/** The shared Supabase client, or null when accounts aren't set up yet. */
+function getAuthClient() {
+  if (authClient) return authClient;
+  if (!isAuthConfigured()) return null;
+  authClient = window.supabase.createClient(LUNIVA_CONFIG.supabaseUrl, LUNIVA_CONFIG.supabaseAnonKey, {
+    auth: {
+      storageKey: AUTH_STORAGE_KEY,   // keep the session under a luniva_ key
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,       // picks up the session after Google sign-in
+      flowType: "implicit"
+    }
+  });
+  return authClient;
 }
 
 /* ---------------------------------------------------------
@@ -941,3 +984,77 @@ function initPublicPage() {
 }
 
 if (!IS_APP_PAGE) initPublicPage();
+
+/* ---------------------------------------------------------
+   9. INSTALL AS AN APP (PWA)
+   sw.js lets Luniva open offline; these helpers show an
+   "Install Luniva" button where the browser supports it, or
+   Add-to-Home-Screen instructions on iPhone/iPad.
+   Any element with [data-install-app] becomes an install
+   button; [data-install-ios] holds the iPhone instructions;
+   [data-install-card] wraps both and hides once installed.
+   --------------------------------------------------------- */
+
+let deferredInstallPrompt = null;
+
+/** True when Luniva is already running as an installed app. */
+function isInstalledApp() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+/** iPhone / iPad Safari can't show an install button, only instructions. */
+function isIOSDevice() {
+  const ua = window.navigator.userAgent;
+  return /iphone|ipad|ipod/i.test(ua) || (ua.indexOf("Macintosh") !== -1 && "ontouchend" in document);
+}
+
+function updateInstallUI() {
+  const installed = isInstalledApp();
+  document.querySelectorAll("[data-install-card]").forEach(function (card) {
+    card.hidden = installed || (!deferredInstallPrompt && !isIOSDevice());
+  });
+  document.querySelectorAll("[data-install-app]").forEach(function (button) {
+    button.hidden = installed || !deferredInstallPrompt;
+  });
+  document.querySelectorAll("[data-install-ios]").forEach(function (hint) {
+    hint.hidden = installed || deferredInstallPrompt !== null || !isIOSDevice();
+  });
+}
+
+function setupInstallPrompt() {
+  // Chrome / Edge / Android: the browser offers an install prompt we can trigger.
+  window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    updateInstallUI();
+  });
+
+  window.addEventListener("appinstalled", function () {
+    deferredInstallPrompt = null;
+    updateInstallUI();
+    showToast("Luniva is installed. Find it on your home screen 🌙", "success");
+  });
+
+  document.addEventListener("click", function (event) {
+    const button = event.target.closest("[data-install-app]");
+    if (!button || !deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function () {
+      deferredInstallPrompt = null;
+      updateInstallUI();
+    });
+  });
+
+  updateInstallUI();
+}
+
+// Register the service worker (only works over https or on localhost).
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function (error) {
+      console.warn("Luniva: offline support unavailable", error);
+    });
+  });
+}
+
+setupInstallPrompt();
