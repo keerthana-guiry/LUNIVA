@@ -20,6 +20,7 @@
     16. Notifications & settings
     17. Legal pages (privacy, terms)
     18. Install app & offline
+    19. Encrypted sync
    ========================================================= */
 
 /* ---------- 1. DESIGN TOKENS ---------- */
@@ -3154,4 +3155,33 @@ button.chip-button[aria-pressed="true"] {
   gap: 0.6rem;
   justify-content: center;
   margin-top: 1rem;
+}
+
+/* ---------- 19. ENCRYPTED SYNC ---------- */
+.sync-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+.status-dot.status-synced {
+  background: var(--lv-success);
+  box-shadow: 0 0 0 3px var(--lv-success-bg);
+}
+.sync-points {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+.sync-points li {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  padding: 0.3rem 0;
+  color: var(--lv-ink-soft);
+  font-size: 0.93rem;
+}
+.sync-points i {
+  color: var(--lv-lavender-700);
+  margin-top: 0.1rem;
 }

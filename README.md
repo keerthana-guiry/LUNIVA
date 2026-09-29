@@ -24,7 +24,7 @@ Sign-up, email verification codes, login codes, password reset and Google sign-i
 
 ## Privacy
 
-Passwords are handled by Supabase and never stored in the browser. Health records (periods, check-ins, settings, notifications) are stored only in the browser's `localStorage` on each device and are not sent anywhere. Settings → Privacy lets you export all data as JSON or delete it.
+Passwords are handled by Supabase and never stored in the browser. Health records (periods, check-ins, settings, notifications) are stored in the browser's `localStorage` on each device. They leave the device only if the user turns on **encrypted sync**: records are then encrypted in the browser (AES-256-GCM, key from the user's passphrase via PBKDF2-SHA-256, 600k rounds) and only ciphertext is stored in the `luniva_sync` table, protected by Row Level Security. Settings → Privacy lets you export all data as JSON or delete it.
 
 ## Structure
 
@@ -59,6 +59,8 @@ js/checkin.js       Daily check-in
 js/insights.js      Insights and history
 js/companion.js     Companion page
 js/notifications.js Creates due reminders on every app page + notification centre
+js/sync.js          Optional end-to-end encrypted sync (AES-GCM, passphrase)
+supabase/           SQL for the luniva_sync table (run once in Supabase)
 assets/images/      Logo
 ```
 
@@ -74,6 +76,7 @@ App pages load `storage.js`, then `app.js`, then `notifications.js`, then their 
 | `luniva_dailyLogs` | `{ "YYYY-MM-DD": { flow, pain, painLocations[], symptoms[], mood, energy, sleep{…}, cravings[], weightKg, notes } }` |
 | `luniva_notifications` | `[{ id, type, message, date, read }]` |
 | `luniva_auth` | Supabase login session (managed by Supabase; not exported) |
+| `luniva_sync` | This device's encrypted-sync set-up incl. its key (not exported) |
 
 Dates are always local `YYYY-MM-DD` strings (never `toISOString()`), so days don't shift across time zones.
 

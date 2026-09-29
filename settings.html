@@ -190,6 +190,12 @@
         </div>
       </section>
 
+      <!-- Encrypted sync -->
+      <section class="lv-card settings-section" aria-labelledby="sync-title">
+        <h2 id="sync-title" class="card-title-sm"><i class="bi bi-shield-lock" aria-hidden="true"></i> Encrypted sync &amp; backup</h2>
+        <div id="sync-settings" aria-live="polite"></div>
+      </section>
+
       <!-- Install app -->
       <section class="settings-section" aria-label="Install the app">
         <div class="install-card" data-install-card hidden>
@@ -242,7 +248,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <p>This permanently removes your profile, periods, check-ins, settings and notifications from this device and logs you out. It can't be undone.</p>
+          <p>This permanently removes your profile, periods, check-ins, settings and notifications from this device, deletes your encrypted synced copy (if sync is on), and logs you out. It can't be undone.</p>
           <p class="small text-muted-soft mb-0">Tip: use <strong>Export Data</strong> first if you'd like to keep a copy.</p>
         </div>
         <div class="modal-footer">
@@ -259,6 +265,7 @@
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
   <script src="js/notifications.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

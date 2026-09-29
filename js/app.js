@@ -187,6 +187,18 @@ function hideFormAlert(alertElement) {
   alertElement.innerHTML = "";
 }
 
+/** Disable a button and show a spinner while a request is running. */
+function setBusy(button, isBusy, busyText) {
+  if (isBusy) {
+    button.setAttribute("data-label", button.innerHTML);
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + escapeHtml(busyText || "Please wait…");
+  } else {
+    button.disabled = false;
+    if (button.hasAttribute("data-label")) button.innerHTML = button.getAttribute("data-label");
+  }
+}
+
 /* ---------------------------------------------------------
    3. SETTINGS, USER, PERIODS AND DAILY LOGS
    --------------------------------------------------------- */
@@ -494,6 +506,37 @@ function getAverageSleep() {
     .filter(function (hours) { return typeof hours === "number" && !isNaN(hours) && hours > 0; });
   // Two decimals so formatHours() shows exact minutes (7.75 → "7 h 45 min").
   return values.length ? Math.round(average(values) * 100) / 100 : null;
+}
+
+/* ---------------------------------------------------------
+   SUPABASE CLIENT (accounts + encrypted sync)
+   Pages that use it load the Supabase library and config.js
+   before storage.js. On other pages getAuthClient() returns null.
+   --------------------------------------------------------- */
+
+let authClient = null;
+
+/** True when config.js has real Supabase details and the library loaded. */
+function isAuthConfigured() {
+  return typeof LUNIVA_CONFIG !== "undefined" &&
+    !!LUNIVA_CONFIG.supabaseUrl && !!LUNIVA_CONFIG.supabaseAnonKey &&
+    !!window.supabase && typeof window.supabase.createClient === "function";
+}
+
+/** The shared Supabase client, or null when accounts aren't set up yet. */
+function getAuthClient() {
+  if (authClient) return authClient;
+  if (!isAuthConfigured()) return null;
+  authClient = window.supabase.createClient(LUNIVA_CONFIG.supabaseUrl, LUNIVA_CONFIG.supabaseAnonKey, {
+    auth: {
+      storageKey: AUTH_STORAGE_KEY,   // keep the session under a luniva_ key
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,       // picks up the session after Google sign-in
+      flowType: "implicit"
+    }
+  });
+  return authClient;
 }
 
 /* ---------------------------------------------------------

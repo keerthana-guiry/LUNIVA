@@ -21,30 +21,7 @@ const RESEND_WAIT_SECONDS = 60;
    SUPABASE CLIENT
    --------------------------------------------------------- */
 
-let authClient = null;
-
-/** True when config.js has real Supabase details and the library loaded. */
-function isAuthConfigured() {
-  return typeof LUNIVA_CONFIG !== "undefined" &&
-    !!LUNIVA_CONFIG.supabaseUrl && !!LUNIVA_CONFIG.supabaseAnonKey &&
-    !!window.supabase && typeof window.supabase.createClient === "function";
-}
-
-/** The shared Supabase client, or null when accounts aren't set up yet. */
-function getAuthClient() {
-  if (authClient) return authClient;
-  if (!isAuthConfigured()) return null;
-  authClient = window.supabase.createClient(LUNIVA_CONFIG.supabaseUrl, LUNIVA_CONFIG.supabaseAnonKey, {
-    auth: {
-      storageKey: AUTH_STORAGE_KEY,   // keep the session under a luniva_ key
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,       // picks up the session after Google sign-in
-      flowType: "implicit"
-    }
-  });
-  return authClient;
-}
+// getAuthClient() / isAuthConfigured() live in app.js (sync uses them too).
 
 /** Absolute URL of a page in this site (used for Google's redirect). */
 function pageUrl(fileName) {
@@ -107,18 +84,6 @@ function setupPasswordToggles() {
       button.querySelector("i").className = isHidden ? "bi bi-eye-slash" : "bi bi-eye";
     });
   });
-}
-
-/** Disable a button and show a spinner while a request is running. */
-function setBusy(button, isBusy, busyText) {
-  if (isBusy) {
-    button.setAttribute("data-label", button.innerHTML);
-    button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ' + escapeHtml(busyText || "Please wait…");
-  } else {
-    button.disabled = false;
-    if (button.hasAttribute("data-label")) button.innerHTML = button.getAttribute("data-label");
-  }
 }
 
 /** Check an email input; shows the error and returns false if invalid. */
@@ -1086,10 +1051,13 @@ function initSettingsPage() {
   document.getElementById("confirm-delete-data").addEventListener("click", function () {
     const button = document.getElementById("confirm-delete-data");
     setBusy(button, true, "Deleting…");
-    // Sign out of the account, then remove every luniva_* key (incl. the session).
+    // Delete the encrypted synced copy (if any), sign out, then remove
+    // every luniva_* key (incl. the session and sync key).
     const client = getAuthClient();
-    const signOut = client ? client.auth.signOut().catch(function () {}) : Promise.resolve();
-    signOut.then(function () {
+    const removeSynced = typeof deleteSyncedCopyIfAny === "function" ? deleteSyncedCopyIfAny() : Promise.resolve();
+    removeSynced.then(function () {
+      return client ? client.auth.signOut().catch(function () {}) : null;
+    }).then(function () {
       clearAllData();
       window.location.href = "index.html";
     });

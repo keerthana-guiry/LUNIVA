@@ -117,3 +117,15 @@ Before the public launch, go back to Google's OAuth consent screen and click **P
 ## What's still on this device only
 
 Accounts now live in Supabase, but health records (periods, check-ins, settings) are still stored only in the browser of each device. Logging in on a new phone starts with a fresh setup. Syncing records to the account is the next backend step. "Delete Data" in Settings removes data from the device and logs out; deleting the Supabase account itself will need a small server function later.
+
+## 8. Turn on encrypted sync (optional feature for users)
+
+Users can choose to sync their records across devices. Records are encrypted in the browser with the user's own passphrase before upload, so the database only ever holds unreadable ciphertext.
+
+The table it needs is created once:
+
+1. In Supabase open **SQL Editor → New query**.
+2. Paste everything from [`supabase/luniva_sync.sql`](supabase/luniva_sync.sql) and click **Run**.
+3. You should see "Success. No rows returned". Under **Table Editor** a table called `luniva_sync` appears with a green **RLS enabled** label.
+
+Each account can only read and write its own row (Row Level Security). Luniva cannot decrypt anyone's records; if a user forgets their passphrase, their synced copy can only be deleted and started again.
