@@ -14,6 +14,10 @@ python3 -m http.server 8000
 
 Bootstrap 5.3.3, Bootstrap Icons 1.11.3 and Supabase JS 2.117.2 load from the jsDelivr CDN.
 
+## Install as an app
+
+Luniva is a Progressive Web App. On Android/Chrome/Edge an **Install** button appears on the landing page, dashboard and Settings; on iPhone/iPad use Share → Add to Home Screen. Once opened, pages work offline. To force every device to refresh its saved copy after a big change, bump `CACHE_VERSION` in `sw.js`.
+
 ## Accounts
 
 Sign-up, email verification codes, login codes, password reset and Google sign-in use **Supabase Auth**. Until you add your project details to `js/config.js`, the sign-up and login pages explain that accounts aren't connected yet. Follow **[SETUP-ACCOUNTS.md](SETUP-ACCOUNTS.md)** to turn them on.
@@ -39,6 +43,9 @@ notifications.html  In-app notification centre
 settings.html       Profile, cycle, tracking, notifications, privacy, about
 privacy.html        Privacy Policy
 terms.html          Terms of Use
+offline.html        Shown when offline and a page isn't saved yet
+manifest.webmanifest  App name, colours, icons (installable PWA)
+sw.js               Service worker: offline support (network-first)
 
 css/style.css       All styles (design tokens at the top)
 js/config.js        Supabase project URL + public anon key

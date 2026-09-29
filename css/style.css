@@ -19,6 +19,7 @@
     15. Companion
     16. Notifications & settings
     17. Legal pages (privacy, terms)
+    18. Install app & offline
    ========================================================= */
 
 /* ---------- 1. DESIGN TOKENS ---------- */
@@ -3096,4 +3097,61 @@ button.chip-button[aria-pressed="true"] {
   color: var(--lv-muted);
   display: inline-block;
   padding: 0.5rem 0.4rem;
+}
+
+/* ---------- 18. INSTALL APP & OFFLINE ---------- */
+.install-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.15rem;
+  border-radius: var(--lv-radius);
+  background: var(--lv-white);
+  border: 1px solid var(--lv-border);
+  box-shadow: var(--lv-shadow-sm);
+}
+.install-card[hidden] {
+  display: none;
+}
+.install-card .flex-grow-1 {
+  min-width: 12rem;
+}
+.install-card p {
+  font-size: 0.9rem;
+  color: var(--lv-muted);
+}
+.install-icon {
+  border-radius: 14px;
+  flex-shrink: 0;
+  box-shadow: var(--lv-shadow-sm);
+}
+.install-ios {
+  margin-top: 0.35rem;
+  color: var(--lv-ink-soft) !important;
+}
+.offline-page {
+  min-height: 100vh;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--lv-font-body);
+}
+.offline-page h1 {
+  margin: 1rem 0 0.5rem;
+}
+.offline-page p {
+  color: var(--lv-muted);
+}
+.offline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 1rem;
 }

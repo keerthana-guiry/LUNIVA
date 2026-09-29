@@ -6,7 +6,12 @@
   <title>Home · Luniva</title>
   <meta name="theme-color" content="#fbf7f2">
   <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="assets/images/logo-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Luniva">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="css/style.css">
@@ -136,6 +141,19 @@
           </div>
         </div>
       </section>
+
+      <!-- Install as an app (only shown where supported) -->
+      <div class="mt-4">
+        <div class="install-card" data-install-card hidden>
+          <img src="assets/images/icon-192.png" width="52" height="52" alt="" class="install-icon">
+          <div class="flex-grow-1">
+            <strong>Get the Luniva app</strong>
+            <p class="mb-0">Add Luniva to your home screen — it opens full-screen and works offline.</p>
+            <p class="install-ios mb-0" data-install-ios hidden>On iPhone or iPad: tap <i class="bi bi-box-arrow-up" aria-label="Share"></i> <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</p>
+          </div>
+          <button type="button" class="btn btn-luniva" data-install-app hidden><i class="bi bi-download" aria-hidden="true"></i> Install</button>
+        </div>
+      </div>
 
       <!-- Support card -->
       <section class="lv-card lv-card-rose support-card mt-4" aria-labelledby="support-title">
