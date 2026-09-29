@@ -539,16 +539,10 @@ function showToast(message, type) {
    6. BRAND, ROUTE GUARD AND NAVIGATION
    --------------------------------------------------------- */
 
-/** The Luniva mark: a crescent moon resting inside a soft circle. */
+/** The Luniva mark: a crescent moon with an orbiting ring and moon. */
 function getLogoSvg(size) {
   const px = size || 32;
-  return (
-    '<svg class="luniva-mark" width="' + px + '" height="' + px + '" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
-      '<circle cx="24" cy="24" r="22" fill="var(--lv-lavender-100)" stroke="var(--lv-lavender-300)" stroke-width="1.5"/>' +
-      '<path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="var(--lv-rose-500)"/>' +
-      '<circle cx="33" cy="17" r="2" fill="var(--lv-lavender-500)"/>' +
-    '</svg>'
-  );
+  return '<img class="luniva-mark" src="assets/images/logo.svg" width="' + px + '" height="' + px + '" alt="">';
 }
 
 /**

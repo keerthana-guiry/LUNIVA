@@ -505,6 +505,16 @@ button.chip-button[aria-pressed="true"] {
 .brand-link:hover {
   color: var(--lv-ink);
 }
+/* The mark is wide (ring), so show it a little larger than the text height */
+.brand-link .luniva-mark {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+.site-footer .brand-link .luniva-mark {
+  width: 32px;
+  height: 32px;
+}
 .brand-name {
   font-family: var(--lv-font-display);
   font-size: 1.4rem;

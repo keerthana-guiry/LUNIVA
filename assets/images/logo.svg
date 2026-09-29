@@ -1,6 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
   <title>Luniva</title>
-  <circle cx="24" cy="24" r="22" fill="#efe9f8" stroke="#cdbde9" stroke-width="1.5"/>
-  <path d="M29.5 12.5a12 12 0 1 0 6 21.2A10 10 0 0 1 29.5 12.5Z" fill="#d9657f"/>
-  <circle cx="33" cy="17" r="2" fill="#8c6bc4"/>
+  <defs>
+    <clipPath id="lv-back"><rect x="0" y="-10" width="60" height="37" transform="rotate(-23 24 27)"/></clipPath>
+    <clipPath id="lv-front"><rect x="-10" y="27" width="70" height="40" transform="rotate(-23 24 27)"/></clipPath>
+    <mask id="lv-moon">
+      <rect width="48" height="48" fill="#fff"/>
+      <circle cx="29.2" cy="22.6" r="13.6" fill="#000"/>
+      <ellipse cx="24" cy="27" rx="21.5" ry="5.2" transform="rotate(-23 24 27)" fill="none" stroke="#000" stroke-width="4.6" clip-path="url(#lv-front)"/>
+    </mask>
+  </defs>
+  <ellipse cx="24" cy="27" rx="21.5" ry="5.2" transform="rotate(-23 24 27)" fill="none" stroke="#8c6bc4" stroke-width="1.9" clip-path="url(#lv-back)"/>
+  <circle cx="22" cy="28" r="15.5" fill="#d9657f" mask="url(#lv-moon)"/>
+  <ellipse cx="24" cy="27" rx="21.5" ry="5.2" transform="rotate(-23 24 27)" fill="none" stroke="#8c6bc4" stroke-width="1.9" clip-path="url(#lv-front)"/>
+  <circle cx="34.5" cy="17.5" r="3.6" fill="#8c6bc4"/>
 </svg>
