@@ -139,3 +139,16 @@ The **Send feedback** page (links in Settings → About, the account menu, the f
 3. You should see "Success. No rows returned". A table called `luniva_feedback` appears under **Table Editor**.
 
 To read feedback: **Table Editor → luniva_feedback**. The website can only add rows — nobody can read feedback through the site, only you in the dashboard.
+
+## 10. Turn on phone reminders (web push)
+
+Lets people get one daily reminder on their phone, even when Luniva is closed (Settings → Notifications → Phone reminders). The server only stores each device's push address, hour and time zone; the reminder text is decided on the phone, so no health data is sent.
+
+Everything you need is shown on **https://myluniva.netlify.app/push-setup.html** (keys are created in your browser — keep the page open until you finish):
+
+1. **Secrets** — Supabase → **Edge Functions → Secrets**: add `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `CRON_SECRET` from part A.
+2. **Function** — Supabase → **Edge Functions → Deploy a new function → Via Editor**. Name it `luniva-push`, replace the sample code with part B ([`supabase/functions/luniva-push/index.ts`](supabase/functions/luniva-push/index.ts)) and deploy. Then open the function's **Details** and turn **off** "Verify JWT" / "Enforce JWT verification" (the function checks access itself) and save.
+3. **SQL** — Supabase → **SQL Editor → New query**: paste part C and Run. It creates the `luniva_push` table ([`supabase/luniva_push.sql`](supabase/luniva_push.sql)) and a schedule that checks every 15 minutes for reminders that are due.
+4. **Try it** — on your phone open Luniva → Settings → Phone reminders → **Turn on**, then **Send a test**. On iPhone, Luniva must be added to the Home Screen first (iOS 16.4+).
+
+If you ever need new keys, repeat steps 1 and 3 with a fresh setup page; everyone then turns reminders on again.

@@ -44,9 +44,11 @@ settings.html       Profile, cycle, tracking, notifications, privacy, about
 privacy.html        Privacy Policy
 terms.html          Terms of Use
 feedback.html       Send feedback (rating, topic, message) to Supabase
+push-setup.html     One-time owner page: creates push keys, shows code + SQL
 offline.html        Shown when offline and a page isn't saved yet
 manifest.webmanifest  App name, colours, icons (installable PWA)
-sw.js               Service worker: offline support (network-first)
+sw.js               Service worker: offline support (network-first) and
+                    the daily reminder's wording (from on-device data)
 
 css/style.css       All styles (design tokens at the top)
 js/config.js        Supabase project URL + public anon key
@@ -62,8 +64,12 @@ js/companion.js     Companion page
 js/notifications.js Creates due reminders on every app page + notification centre
 js/sync.js          Optional end-to-end encrypted sync (AES-GCM, passphrase)
 js/feedback.js      Feedback form (insert-only table luniva_feedback)
-supabase/           SQL for the luniva_sync and luniva_feedback tables
-                    (run once in Supabase)
+js/push.js          Optional daily phone reminder (web push): subscribe,
+                    settings card, on-device summary read by sw.js
+js/push-setup.js    Key generator for push-setup.html
+supabase/           SQL for the luniva_sync, luniva_feedback and luniva_push
+                    tables (run once in Supabase)
+supabase/functions/luniva-push/  Edge Function that sends the empty daily push
 assets/images/      Logo
 ```
 
@@ -80,6 +86,7 @@ App pages load `storage.js`, then `app.js`, then `notifications.js`, then their 
 | `luniva_notifications` | `[{ id, type, message, date, read }]` |
 | `luniva_auth` | Supabase login session (managed by Supabase; not exported) |
 | `luniva_sync` | This device's encrypted-sync set-up incl. its key (not exported) |
+| `luniva_push` | This device's phone-reminder set-up `{ enabled, endpoint, hour, showDetails, timeZone }` (not exported). The summary the service worker reads lives in Cache Storage `lv-push-state`. |
 
 Dates are always local `YYYY-MM-DD` strings (never `toISOString()`), so days don't shift across time zones.
 

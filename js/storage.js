@@ -26,6 +26,9 @@ const AUTH_STORAGE_KEY = "luniva_auth";
 // device's encryption key, so it is never exported.
 const SYNC_STORAGE_KEY = "luniva_sync";
 
+// Phone-reminder settings for THIS device (see push.js). Never exported.
+const PUSH_STORAGE_KEY = "luniva_push";
+
 // Keys whose contents are included in encrypted sync.
 const SYNCED_KEYS = ["luniva_user", "luniva_settings", "luniva_periods", "luniva_dailyLogs", "luniva_notifications"];
 
@@ -102,6 +105,7 @@ function clearUserData() {
     deleteData(STORAGE_KEYS[name]);
   });
   deleteData(SYNC_STORAGE_KEY);
+  deleteData(PUSH_STORAGE_KEY);
 }
 
 /** Collect all luniva_* data into one object (used by Export Data). */
