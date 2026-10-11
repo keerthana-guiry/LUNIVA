@@ -3332,3 +3332,105 @@ button.chip-button[aria-pressed="true"] {
   font-size: 0.78rem;
   white-space: pre;
 }
+
+/* ---------- 22. GETTING-STARTED GUIDE ---------- */
+.guide-page .legal-section h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.guide-number {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--lv-lavender-100);
+  color: var(--lv-lavender-700);
+  font-family: var(--lv-font-body);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.guide-optional {
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--lv-radius-pill);
+  background: var(--lv-rose-50);
+  color: var(--lv-rose-700);
+  font-family: var(--lv-font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.guide-steps {
+  padding-left: 1.3rem;
+}
+.guide-steps li {
+  padding: 0.3rem 0;
+}
+.guide-steps li::marker {
+  color: var(--lv-lavender-700);
+  font-weight: 700;
+}
+.guide-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.guide-tabs button {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: var(--lv-radius-pill);
+  border: 1px solid var(--lv-border-strong);
+  background: var(--lv-white);
+  color: var(--lv-ink-soft);
+  font-weight: 500;
+}
+.guide-tabs button[aria-selected="true"] {
+  background: var(--lv-lavender-100);
+  border-color: var(--lv-lavender-500);
+  color: var(--lv-lavender-700);
+  font-weight: 600;
+}
+.guide-tabs button:focus-visible {
+  outline: none;
+  box-shadow: var(--lv-focus);
+}
+.guide-panel {
+  padding: 1rem 1.25rem 0.5rem;
+  border: 1px solid var(--lv-border);
+  border-radius: var(--lv-radius);
+  background: var(--lv-white);
+}
+.guide-faq details {
+  border: 1px solid var(--lv-border);
+  border-radius: var(--lv-radius);
+  background: var(--lv-white);
+  padding: 0 1rem;
+}
+.guide-faq details + details {
+  margin-top: 0.5rem;
+}
+.guide-faq summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0;
+  font-weight: 600;
+  cursor: pointer;
+}
+.guide-faq details p {
+  margin-bottom: 0.9rem;
+}
+.guide-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}

@@ -140,6 +140,12 @@ The **Send feedback** page (links in Settings → About, the account menu, the f
 
 To read feedback: **Table Editor → luniva_feedback**. The website can only add rows — nobody can read feedback through the site, only you in the dashboard.
 
+**Summary (optional):** run [`supabase/luniva_feedback_summary.sql`](supabase/luniva_feedback_summary.sql) once the same way. Table Editor then also shows three live, read-only views:
+
+- `luniva_feedback_summary` — total messages, average rating, happy/unhappy, problems/ideas/loves, last 7 days, how many want a reply
+- `luniva_feedback_by_week` — the same week by week
+- `luniva_feedback_to_reply` — messages where someone left their email, newest first
+
 ## 10. Turn on phone reminders (web push)
 
 Lets people get one daily reminder on their phone, even when Luniva is closed (Settings → Notifications → Phone reminders). The server only stores each device's push address, hour and time zone; the reminder text is decided on the phone, so no health data is sent.
