@@ -1,0 +1,57 @@
+# Keeps Luniva's free Supabase project from being paused for inactivity.
+#
+# Supabase pauses free projects after about a week with no requests.
+# Every 3 days this sends two harmless requests to the project, using
+# the same public (publishable) key the website already uses. It reads
+# the URL and key from js/config.js, so there is only one place to
+# change them. No secrets are needed.
+#
+# Run it by hand any time: GitHub → Actions → "Keep Supabase awake" →
+# Run workflow.
+
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"   # 06:17 UTC every 3rd day
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Read Supabase details from js/config.js
+        run: |
+          url=$(grep -o 'supabaseUrl: *"[^"]*"' js/config.js | sed 's/.*"\(.*\)"/\1/')
+          key=$(grep -o 'supabaseAnonKey: *"[^"]*"' js/config.js | sed 's/.*"\(.*\)"/\1/')
+          if [ -z "$url" ] || [ -z "$key" ]; then
+            echo "Could not find supabaseUrl / supabaseAnonKey in js/config.js"
+            exit 1
+          fi
+          echo "SUPABASE_URL=$url" >> "$GITHUB_ENV"
+          echo "SUPABASE_KEY=$key" >> "$GITHUB_ENV"
+
+      - name: Ping Supabase
+        run: |
+          # 1) Auth service (sign-in settings).
+          auth=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" "$SUPABASE_URL/auth/v1/settings")
+          # 2) Database via the REST API. Logged-out requests are refused
+          #    by Row Level Security (401/403/200 empty) — that's expected;
+          #    the request still counts as activity.
+          rest=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: $SUPABASE_KEY" "$SUPABASE_URL/rest/v1/luniva_sync?select=updated_at&limit=1")
+          echo "Auth: HTTP $auth   Database: HTTP $rest"
+          # Fail (so GitHub emails you) only if Supabase couldn't be reached
+          # at all, e.g. the project is already paused.
+          if [ "$auth" = "000" ] || [ "${auth:0:1}" = "5" ] || [ "$rest" = "000" ] || [ "${rest:0:1}" = "5" ]; then
+            echo "Supabase did not respond normally. If the project is paused, restore it in the Supabase dashboard."
+            exit 1
+          fi
