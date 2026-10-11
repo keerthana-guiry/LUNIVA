@@ -3159,10 +3159,8 @@ button.chip-button[aria-pressed="true"] {
 
 /* ---------- 19. ENCRYPTED SYNC ---------- */
 .sync-status {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
   margin-bottom: 0.5rem;
+  line-height: 1.5;
 }
 .status-dot.status-synced {
   background: var(--lv-success);

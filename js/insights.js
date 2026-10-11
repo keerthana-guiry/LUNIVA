@@ -120,9 +120,11 @@ function renderCycleInsights(periods) {
     const lengths = cycles.map(function (cycle) { return cycle.value; });
     const shortest = Math.min.apply(null, lengths);
     const longest = Math.max.apply(null, lengths);
-    setInsightText("cycle-text", cycles.length > 1
-      ? "Your recent records show cycles between " + shortest + " and " + longest + " days."
-      : "Your records show one full cycle of " + pluralize(shortest, "day") + " so far.");
+    let cycleText;
+    if (cycles.length === 1) cycleText = "Your records show one full cycle of " + pluralize(shortest, "day") + " so far.";
+    else if (shortest === longest) cycleText = "Your recorded cycles have all been " + pluralize(shortest, "day") + ".";
+    else cycleText = "Your recent records show cycles between " + shortest + " and " + longest + " days.";
+    setInsightText("cycle-text", cycleText);
   } else {
     cyclesBox.innerHTML = emptyStateMarkup("Log at least two period start dates to see your cycle lengths 🌙");
     setInsightText("cycle-text", "");
