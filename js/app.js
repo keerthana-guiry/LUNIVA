@@ -136,6 +136,11 @@ function getCurrentPage() {
   return file || "index.html";
 }
 
+/** Link to the feedback page that remembers which page it was opened from. */
+function getFeedbackHref() {
+  return "feedback.html?from=" + encodeURIComponent(getCurrentPage().replace(/\.html$/, ""));
+}
+
 /** Time-based greeting for the dashboard. */
 function getGreeting() {
   const hour = new Date().getHours();
@@ -697,6 +702,7 @@ function renderAppNav() {
       '<div class="sidebar-footer">' +
         '<div class="sidebar-user"><span class="avatar" aria-hidden="true">' + escapeHtml(getInitial(user.name)) + "</span>" +
         '<span class="sidebar-user-name">' + escapeHtml(user.name || "Friend") + "</span></div>" +
+        '<a class="sidebar-logout" href="' + getFeedbackHref() + '"><i class="bi bi-chat-heart" aria-hidden="true"></i><span>Send feedback</span></a>' +
         '<a class="sidebar-logout" href="login.html?logout=1"><i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Log out</span></a>' +
       "</div>" +
     "</aside>" +
@@ -715,6 +721,7 @@ function renderAppNav() {
           '<ul class="dropdown-menu dropdown-menu-end luniva-dropdown">' +
             '<li><a class="dropdown-item" href="history.html"><i class="bi bi-clock-history" aria-hidden="true"></i> History</a></li>' +
             '<li><a class="dropdown-item" href="settings.html"><i class="bi bi-gear" aria-hidden="true"></i> Settings</a></li>' +
+            '<li><a class="dropdown-item" href="' + getFeedbackHref() + '"><i class="bi bi-chat-heart" aria-hidden="true"></i> Send feedback</a></li>' +
             '<li><hr class="dropdown-divider"></li>' +
             '<li><a class="dropdown-item" href="login.html?logout=1"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Log out</a></li>' +
           "</ul>" +
@@ -742,7 +749,7 @@ function renderAppFooter() {
   footer.innerHTML =
     "<p>Luniva helps you record and understand your personal patterns. " +
     "It does not provide medical diagnosis or replace professional medical advice.</p>" +
-    '<p class="app-footer-links"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a></p>';
+    '<p class="app-footer-links"><a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms</a> · <a href="' + getFeedbackHref() + '">Send feedback</a></p>';
   main.appendChild(footer);
 }
 
