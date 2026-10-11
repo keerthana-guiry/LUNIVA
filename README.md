@@ -44,6 +44,7 @@ settings.html       Profile, cycle, tracking, notifications, privacy, about
 privacy.html        Privacy Policy
 terms.html          Terms of Use
 feedback.html       Send feedback (rating, topic, message) to Supabase
+guide.html          Shareable "Getting started": account, install, reminders
 push-setup.html     One-time owner page: creates push keys, shows code + SQL
 offline.html        Shown when offline and a page isn't saved yet
 manifest.webmanifest  App name, colours, icons (installable PWA)
@@ -67,8 +68,10 @@ js/feedback.js      Feedback form (insert-only table luniva_feedback)
 js/push.js          Optional daily phone reminder (web push): subscribe,
                     settings card, on-device summary read by sw.js
 js/push-setup.js    Key generator for push-setup.html
+js/guide.js         Device tabs and share button for guide.html
 supabase/           SQL for the luniva_sync, luniva_feedback and luniva_push
-                    tables (run once in Supabase)
+                    tables, plus read-only feedback summary views
+                    (each run once in Supabase)
 supabase/functions/luniva-push/  Edge Function that sends the empty daily push
 assets/images/      Logo
 ```

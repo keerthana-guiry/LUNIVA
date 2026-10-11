@@ -18,7 +18,7 @@
    Change CACHE_VERSION to force every device to refresh its copy.
    ========================================================= */
 
-const CACHE_VERSION = "luniva-v4";
+const CACHE_VERSION = "luniva-v5";
 
 // Everything needed to open the app offline.
 const APP_SHELL = [
@@ -38,6 +38,7 @@ const APP_SHELL = [
   "privacy.html",
   "terms.html",
   "feedback.html",
+  "guide.html",
   "offline.html",
   "manifest.webmanifest",
   "css/style.css",
@@ -53,6 +54,7 @@ const APP_SHELL = [
   "js/sync.js",
   "js/feedback.js",
   "js/push.js",
+  "js/guide.js",
   "assets/images/logo.svg",
   "assets/images/logo-full.png",
   "assets/images/icon-192.png",
