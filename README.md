@@ -43,6 +43,7 @@ notifications.html  In-app notification centre
 settings.html       Profile, cycle, tracking, notifications, privacy, about
 privacy.html        Privacy Policy
 terms.html          Terms of Use
+feedback.html       Send feedback (rating, topic, message) to Supabase
 offline.html        Shown when offline and a page isn't saved yet
 manifest.webmanifest  App name, colours, icons (installable PWA)
 sw.js               Service worker: offline support (network-first)
@@ -60,7 +61,9 @@ js/insights.js      Insights and history
 js/companion.js     Companion page
 js/notifications.js Creates due reminders on every app page + notification centre
 js/sync.js          Optional end-to-end encrypted sync (AES-GCM, passphrase)
-supabase/           SQL for the luniva_sync table (run once in Supabase)
+js/feedback.js      Feedback form (insert-only table luniva_feedback)
+supabase/           SQL for the luniva_sync and luniva_feedback tables
+                    (run once in Supabase)
 assets/images/      Logo
 ```
 

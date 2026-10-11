@@ -3183,3 +3183,98 @@ button.chip-button[aria-pressed="true"] {
   color: var(--lv-lavender-700);
   margin-top: 0.1rem;
 }
+
+/* ---------- 20. FEEDBACK ---------- */
+.feedback-page {
+  max-width: 640px;
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+}
+.feedback-page h1 {
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+  margin: 0.6rem 0 0.4rem;
+}
+.feedback-page fieldset legend {
+  font-size: 1rem;
+  float: none;
+}
+.rating-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.45rem;
+}
+.rating-row input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.rating-row label {
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.5rem 0.2rem;
+  border: 1px solid var(--lv-border-strong);
+  border-radius: 16px;
+  background: var(--lv-white);
+  color: var(--lv-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s var(--lv-ease);
+}
+.rating-row label span {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.rating-row label:hover {
+  border-color: var(--lv-lavender-300);
+  background: var(--lv-lavender-50);
+}
+.rating-row input:checked + label {
+  background: var(--lv-lavender-100);
+  border-color: var(--lv-lavender-500);
+  color: var(--lv-lavender-700);
+  font-weight: 600;
+  transform: translateY(-2px);
+}
+.rating-row input:focus-visible + label {
+  box-shadow: var(--lv-focus);
+}
+.field-error {
+  min-height: 0;
+  margin-top: 0.35rem;
+  color: var(--lv-danger);
+  font-size: 0.875rem;
+}
+.field-error:empty {
+  margin-top: 0;
+}
+.feedback-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.feedback-thanks {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+.feedback-thanks img {
+  margin-bottom: 1rem;
+}
+.feedback-thanks h1:focus {
+  outline: none;
+}
+#feedback-count {
+  flex-shrink: 0;
+  margin-left: 0.75rem;
+  white-space: nowrap;
+}

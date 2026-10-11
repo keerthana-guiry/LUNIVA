@@ -129,3 +129,13 @@ The table it needs is created once:
 3. You should see "Success. No rows returned". Under **Table Editor** a table called `luniva_sync` appears with a green **RLS enabled** label.
 
 Each account can only read and write its own row (Row Level Security). Luniva cannot decrypt anyone's records; if a user forgets their passphrase, their synced copy can only be deleted and started again.
+
+## 9. Turn on the feedback form
+
+The **Send feedback** page (links in Settings → About, the account menu, the footer of every app page and the landing page) saves messages to a table only you can read.
+
+1. In Supabase open **SQL Editor → New query**.
+2. Paste everything from [`supabase/luniva_feedback.sql`](supabase/luniva_feedback.sql) and click **Run**.
+3. You should see "Success. No rows returned". A table called `luniva_feedback` appears under **Table Editor**.
+
+To read feedback: **Table Editor → luniva_feedback**. The website can only add rows — nobody can read feedback through the site, only you in the dashboard.
