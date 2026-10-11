@@ -237,8 +237,10 @@ function finishSignIn(authUser) {
   showAuthPanel("switch-panel");
 
   document.getElementById("switch-confirm").onclick = function () {
-    clearUserData();
-    goToApp(saveProfileFromAuthUser(authUser));
+    stopPhoneReminders().then(function () {
+      clearUserData();
+      goToApp(saveProfileFromAuthUser(authUser));
+    });
   };
   document.getElementById("switch-cancel").onclick = function () {
     getAuthClient().auth.signOut().finally(function () {
@@ -610,14 +612,19 @@ function initLoginPage() {
   });
 }
 
+/** Turn off phone reminders on this device (push.js), so they never reach the next person. */
+function stopPhoneReminders() {
+  return typeof turnOffPush === "function" ? turnOffPush() : Promise.resolve();
+}
+
 /**
  * Log out: end the Supabase session. Health data stays on this
  * device so the same person can log back in and continue.
  */
 function logoutUser() {
   const client = getAuthClient();
-  const signOut = client ? client.auth.signOut() : Promise.resolve();
-  return signOut
+  return stopPhoneReminders()
+    .then(function () { return client ? client.auth.signOut() : null; })
     .catch(function () { /* offline: still clear the local session below */ })
     .then(function () {
       deleteData(AUTH_STORAGE_KEY);
@@ -1055,7 +1062,7 @@ function initSettingsPage() {
     // every luniva_* key (incl. the session and sync key).
     const client = getAuthClient();
     const removeSynced = typeof deleteSyncedCopyIfAny === "function" ? deleteSyncedCopyIfAny() : Promise.resolve();
-    removeSynced.then(function () {
+    Promise.all([removeSynced, stopPhoneReminders()]).then(function () {
       return client ? client.auth.signOut().catch(function () {}) : null;
     }).then(function () {
       clearAllData();

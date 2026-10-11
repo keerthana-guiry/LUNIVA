@@ -11,10 +11,14 @@
      always correct.
    • Login requests to Supabase are never cached.
 
+   It also shows the daily phone reminder (see js/push.js). The push
+   from the server is empty; the wording is worked out here from a
+   small summary the app saves on this device ("lv-push-state").
+
    Change CACHE_VERSION to force every device to refresh its copy.
    ========================================================= */
 
-const CACHE_VERSION = "luniva-v3";
+const CACHE_VERSION = "luniva-v4";
 
 // Everything needed to open the app offline.
 const APP_SHELL = [
@@ -48,6 +52,7 @@ const APP_SHELL = [
   "js/notifications.js",
   "js/sync.js",
   "js/feedback.js",
+  "js/push.js",
   "assets/images/logo.svg",
   "assets/images/logo-full.png",
   "assets/images/icon-192.png",
@@ -137,4 +142,94 @@ self.addEventListener("fetch", function (event) {
   }
 
   // Everything else (e.g. Supabase login requests) goes straight to the network.
+});
+
+/* ---------------------------------------------------------
+   DAILY PHONE REMINDER (web push)
+   --------------------------------------------------------- */
+
+const PUSH_STATE_CACHE = "lv-push-state";
+const PUSH_STATE_URL = "push-state.json";
+
+function readPushState() {
+  return caches.open(PUSH_STATE_CACHE)
+    .then(function (cache) { return cache.match(PUSH_STATE_URL); })
+    .then(function (response) { return response ? response.json() : null; })
+    .catch(function () { return null; });
+}
+
+function localDateString(date) {
+  return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+}
+
+/** Whole days from a to b (YYYY-MM-DD), using local noon to avoid clock-change issues. */
+function daysFromTo(a, b) {
+  const pa = a.split("-").map(Number), pb = b.split("-").map(Number);
+  return Math.round((new Date(pb[0], pb[1] - 1, pb[2], 12) - new Date(pa[0], pa[1] - 1, pa[2], 12)) / 86400000);
+}
+
+/** Decide today's reminder from the saved summary. Never needs the network. */
+function buildReminder(state, now) {
+  const today = localDateString(now);
+  const on = state.enabled || {};
+  const details = !!state.showDetails;
+  const discreet = { body: "A gentle reminder from Luniva 🌙 Tap to see what's coming up.", url: "dashboard.html" };
+  const pick = function (list) { return list && list.length ? list[now.getDate() % list.length] : null; };
+
+  if (state.testAt && now.getTime() - state.testAt < 10 * 60 * 1000) {
+    return { tag: "luniva-test", body: "Reminders are working 🎉 This is how Luniva will remind you each day.", url: "settings.html" };
+  }
+
+  if (state.activeStart) {
+    const day = daysFromTo(state.activeStart, today) + 1;
+    if (day >= 1 && (on.checkin || on.period) && state.lastLogDate !== today) {
+      return details
+        ? { body: "Day " + day + " of your period. How's your flow today? Tap to log it.", url: "checkin.html" }
+        : discreet;
+    }
+  } else if (state.nextStart) {
+    const until = daysFromTo(today, state.nextStart);
+    const when = until === 0 ? "today" : "in about " + until + (until === 1 ? " day" : " days");
+    if (on.pad && until >= 0 && until <= (state.padDays || 0)) {
+      return details ? { body: "Your period may start " + when + ". You might want to carry a pad 👜", url: "tracker.html" } : discreet;
+    }
+    if (on.period && until >= 0 && until <= 3) {
+      return details ? { body: "Your period may start " + when + ". 🔔", url: "tracker.html" } : discreet;
+    }
+  }
+
+  if (on.checkin && state.lastLogDate !== today) {
+    return { body: "How are you feeling today? Take a minute for your daily check-in 📝", url: "checkin.html" };
+  }
+  const note = (on.motivation && pick(state.motivation)) || (on.companion && pick(state.companion));
+  if (note) return { body: note, url: on.motivation ? "dashboard.html" : "companion.html" };
+  return { body: "A gentle moment for yourself today 🌙", url: "dashboard.html" };
+}
+
+self.addEventListener("push", function (event) {
+  event.waitUntil(readPushState().then(function (state) {
+    const note = buildReminder(state || {}, new Date());
+    return self.registration.showNotification("Luniva", {
+      body: note.body,
+      icon: "assets/images/icon-192.png",
+      tag: note.tag || "luniva-daily",
+      data: { url: note.url }
+    });
+  }));
+});
+
+// Tapping the reminder opens (or focuses) Luniva on the right page.
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "dashboard.html", self.registration.scope).href;
+  event.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (windows) {
+    for (const client of windows) {
+      if ("focus" in client && "navigate" in client) {
+        return client.navigate(target)
+          .then(function (opened) { return (opened || client).focus(); })
+          .catch(function () { return self.clients.openWindow(target); });
+      }
+    }
+    return self.clients.openWindow(target);
+  }));
 });

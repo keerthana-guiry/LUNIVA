@@ -155,7 +155,7 @@
       <!-- Notifications -->
       <section class="lv-card settings-section" aria-labelledby="notif-title">
         <h2 id="notif-title" class="card-title-sm"><i class="bi bi-bell" aria-hidden="true"></i> Notifications</h2>
-        <p class="text-muted-soft small">In-app reminders, shown when you open Luniva. Changes save automatically.</p>
+        <p class="text-muted-soft small">Choose which reminders you get. They appear in Luniva's notification centre, and as a daily phone reminder if you turn that on below. Changes save automatically.</p>
         <div class="toggle-list">
           <div class="toggle-row">
             <span class="icon-bubble icon-bubble-rose" aria-hidden="true">🔔</span>
@@ -188,6 +188,7 @@
             <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="notify-companion" data-notification-key="companion"></div>
           </div>
         </div>
+        <div id="push-settings" class="push-settings" aria-live="polite"></div>
       </section>
 
       <!-- Encrypted sync -->
@@ -266,6 +267,7 @@
   <script src="js/app.js"></script>
   <script src="js/notifications.js"></script>
   <script src="js/sync.js"></script>
+  <script src="js/push.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

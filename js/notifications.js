@@ -2,10 +2,10 @@
    Luniva — notifications.js
    Loaded on EVERY app page (after app.js).
 
-   A static website can't send reminders while it is closed, so
-   notifications are in-app only: on each page load we look at the
-   dates and settings and create any notifications that are due —
-   at most one per type per day. Disabled types are never created.
+   In-app notifications: on each page load we look at the dates
+   and settings and create any notifications that are due — at
+   most one per type per day. Disabled types are never created.
+   (The optional daily phone reminder lives in push.js and sw.js.)
 
    It also powers the Notification Centre on notifications.html.
    Requires storage.js and app.js.

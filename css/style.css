@@ -3278,3 +3278,57 @@ button.chip-button[aria-pressed="true"] {
   margin-left: 0.75rem;
   white-space: nowrap;
 }
+
+/* ---------- 21. PHONE REMINDERS (web push) ---------- */
+.push-settings {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--lv-border);
+}
+.push-settings:empty {
+  display: none;
+}
+.push-title {
+  font-family: var(--lv-font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+.push-options {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.push-options .form-select {
+  max-width: 220px;
+}
+
+/* Owner-only setup page (push-setup.html) */
+.setup-secret + .setup-secret {
+  margin-top: 1rem;
+}
+.setup-secret-name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.setup-secret .form-control {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+.setup-block .btn {
+  margin-bottom: 0.6rem;
+}
+.setup-block pre {
+  max-height: 340px;
+  overflow: auto;
+  margin: 0;
+  padding: 1rem;
+  border-radius: 12px;
+  background: var(--lv-lavender-50);
+  border: 1px solid var(--lv-border);
+  font-size: 0.78rem;
+  white-space: pre;
+}
